@@ -18,56 +18,45 @@ import { Input } from "@/components/ui/input";
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-    const [timer, setTimer] = useState(0);
-
-
+  const [timer, setTimer] = useState(0);
 
   const handleSubmit = async () => {
-  if (!email) {
-    toast.error("Enter your email");
-    return;
-  }
+    if (!email) {
+      toast.error("Enter your email");
+      return;
+    }
 
-  if (timer > 0) return; // Prevent spam clicking
+    if (timer > 0) return; // Prevent spam clicking
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    await axios.post("/api/auth/forgot-password", { email });
+      await axios.post("/api/auth/forgot-password", { email });
 
-    toast.success(
-      "If an account exists, a reset link has been sent."
-    );
+      toast.success("If an account exists, a reset link has been sent.");
 
-    setTimer(30); // 🔥 Start 30 sec cooldown
+      setTimer(30); // 🔥 Start 30 sec cooldown
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (timer === 0) return;
 
-  } catch (error: any) {
-    toast.error(
-      error.response?.data?.message || "Something went wrong"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
-useEffect(() => {
-  if (timer === 0) return;
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
 
-  const interval = setInterval(() => {
-    setTimer((prev) => prev - 1);
-  }, 1000);
-
-  return () => clearInterval(interval);
-}, [timer]);
-
+    return () => clearInterval(interval);
+  }, [timer]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40 px-4">
-
-      <Card className="w-full max-w-md shadow-xl">
+      <Card className="w-full max-w-md shadow-xl border-[1px] border-[#8080807a]">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
-            Forgot Password
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold">Forgot Password</CardTitle>
           <CardDescription>
             Enter your email to receive a password reset link
           </CardDescription>
@@ -79,20 +68,20 @@ useEffect(() => {
             placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="border-[0.5px] border-[#80808088]"
           />
 
           <Button
-  onClick={handleSubmit}
-  disabled={loading || timer > 0}
-  className="w-full"
->
-  {timer > 0
-    ? `Resend in ${timer}s`
-    : loading
-    ? "Sending..."
-    : "Send Reset Link"}
-</Button>
-
+            onClick={handleSubmit}
+            disabled={loading || timer > 0}
+            className="w-full"
+          >
+            {timer > 0
+              ? `Resend in ${timer}s`
+              : loading
+                ? "Sending..."
+                : "Send Reset Link"}
+          </Button>
 
           <div className="text-center text-sm text-muted-foreground">
             <Link href="/auth/login" className="underline">

@@ -73,7 +73,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40 px-4">
-      <Card className="w-full max-w-md shadow-xl">
+      <Card className="w-full max-w-md shadow-xl border-[1px] border-[#8080807a]">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
           <CardDescription>Enter and confirm your new password</CardDescription>
@@ -88,6 +88,7 @@ export default function ResetPasswordPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="new-password"
+              className="border-[0.5px] border-[#80808088]"
             />
           </div>
 
@@ -99,6 +100,7 @@ export default function ResetPasswordPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               autoComplete="new-password"
+              className="border-[0.5px] border-[#80808088]"
             />
 
             <button
@@ -111,9 +113,8 @@ export default function ResetPasswordPage() {
           </div>
 
           {confirmPassword && password.trim() !== confirmPassword.trim() && (
-  <p className="text-sm text-red-500">Passwords do not match</p>
-)}
-
+            <p className="text-sm text-red-500">Passwords do not match</p>
+          )}
 
           <Button
             onClick={handleReset}
