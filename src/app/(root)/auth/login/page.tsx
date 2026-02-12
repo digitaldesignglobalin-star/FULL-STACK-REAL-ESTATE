@@ -4,14 +4,22 @@ import { useState, FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import toast from "react-hot-toast";
+
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+const [googleLoading, setGoogleLoading] = useState(false);
+
+
+  const session = useSession()
+  console.log(session)
+
 
   const isValidEmail = (email: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -53,6 +61,20 @@ const isFormValid =
       setLoading(false);
     }
   };
+
+
+  const handleGoogleLogin = async () => {
+  try {
+    setGoogleLoading(true);
+    await signIn("google", {
+      callbackUrl: "/dashboard",
+    });
+  } catch {
+    toast.error("Google login failed");
+  } finally {
+    setGoogleLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-100 relative flex items-center justify-center px-4">
@@ -109,7 +131,7 @@ const isFormValid =
           {/* Forgot Password */}
           <div className="text-right">
             <Link
-              href="/forgot-password"
+              href="/auth/forgot-password"
               className="text-sm text-[#006AC2] hover:underline"
             >
               Forgot password?
@@ -139,14 +161,16 @@ const isFormValid =
         </div>
 
         {/* Google Button */}
-        <button className="w-full border border-[#808080ad] py-3 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 transition">
+        <button className="w-full border border-[#808080ad] py-3 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 transition cursor-pointer" onClick={handleGoogleLogin}
+  disabled={googleLoading}>
           <Image
             src="https://www.svgrepo.com/show/475656/google-color.svg"
             alt="Google"
             width={20}
             height={20}
           />
-          Continue with Google
+          {/* Continue with Google */}
+           {googleLoading ? "Redirecting..." : "Continue with Google"}
         </button>
 
         {/* Register Redirect */}

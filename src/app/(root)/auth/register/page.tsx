@@ -6,13 +6,21 @@ import Image from "next/image";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+
+
 
   const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -31,7 +39,7 @@ export default function RegisterPage() {
 
     setLoading(true);
 
-    const toastId = toast.loading("Creating account...");
+    const toastId = toast.loading("Sending OTP...");
 
     try {
       const res = await axios.post("/api/auth/register", {
@@ -40,21 +48,11 @@ export default function RegisterPage() {
         password,
       });
 
-      toast.success(res.data?.message || "Account created successfully!", {
-        id: toastId,
-      });
+      toast.success("OTP sent to your email", { id: toastId });
 
-      setName("");
-      setEmail("");
-      setPassword("");
+      router.push(`/auth/verify?email=${email}`);
 
       console.log(res.data);
-
-      // if (!res.ok) {
-      //   alert(data.message || "Something went wrong");
-      // } else {
-      //   alert("Account created successfully!");
-      // }
     } catch (error) {
       console.error(error);
 
@@ -65,13 +63,33 @@ export default function RegisterPage() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+  try {
+    setGoogleLoading(true);
+    await signIn("google", { callbackUrl: "/" });
+  } catch {
+    toast.error("Google sign-in failed");
+  } finally {
+    setGoogleLoading(false);
+  }
+};
+
+
   return (
     <div className="min-h-screen bg-gray-100 relative flex items-center justify-center px-4">
       {/* Back Button - Extreme Top Left */}
       <div className="absolute top-3 left-3">
         <Link
           href="/"
-          className="text-sm font-medium text-[#006AC2] hover:underline"
+          className=" inline-flex items-center gap-1
+      px-3 py-1.5
+      text-sm font-medium
+      text-[#006AC2]
+      rounded-md
+      transition-all duration-200
+      hover:bg-[#006AC2]/10
+      active:scale-95
+      active:bg-[#006AC2]/20"
         >
           ← Back
         </Link>
@@ -148,14 +166,16 @@ export default function RegisterPage() {
         </div>
 
         {/* Google Button */}
-        <button className="w-full border border-[#808080ad] py-3 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 transition">
+        <button type="button" className="w-full border border-[#808080ad] py-3 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 transition cursor-pointer"  onClick={handleGoogleSignIn}
+  disabled={googleLoading}>
           <Image
             src="https://www.svgrepo.com/show/475656/google-color.svg"
             alt="Google"
             width={20}
             height={20}
           />
-          Continue with Google
+          {/* Continue with Google */}
+           {googleLoading ? "Redirecting..." : "Continue with Google"}
         </button>
 
         {/* Login */}

@@ -17,6 +17,7 @@
     "mongoose": "^9.1.6",
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.30",
+    "nodemailer": "^7.0.11",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^7.0.9",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
