@@ -67,7 +67,7 @@ const isFormValid =
   try {
     setGoogleLoading(true);
     await signIn("google", {
-      callbackUrl: "/dashboard",
+      callbackUrl: "/",
     });
   } catch {
     toast.error("Google login failed");

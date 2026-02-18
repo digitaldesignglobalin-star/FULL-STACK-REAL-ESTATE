@@ -71,6 +71,7 @@ export default function VerifyOtpPage() {
 
       toast.success("Account verified successfully!");
       router.push("/auth/login");
+      // router.push(`/auth/verify-phone?email=${email}`);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Verification failed");
     } finally {

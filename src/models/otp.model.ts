@@ -7,20 +7,27 @@ const otpSchema = new mongoose.Schema({
     required: true,
   },
   password: String,
+  mobile: {
+    // ✅ ADD THIS
+    type: String,
+  },
   otp: {
     type: String,
     required: true,
   },
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
   expiresAt: {
     type: Date,
-  required: true,
-  index: { expires: 0 },
+    required: true,
+    index: { expires: 0 },
   },
   attempts: {
-  type: Number,
-  default: 0,
-},
-
+    type: Number,
+    default: 0,
+  },
 });
 
 export default mongoose.models.Otp || mongoose.model("Otp", otpSchema);

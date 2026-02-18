@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
       name: otpRecord.name,
       email: otpRecord.email,
       password: otpRecord.password,
+        mobile: otpRecord.mobile,
     });
 
     // Delete OTP record
@@ -63,6 +64,19 @@ export async function POST(req: NextRequest) {
       { message: "Account created successfully" },
       { status: 200 },
     );
+
+
+    // Instead of creating user
+// otpRecord.emailVerified = true;
+// await otpRecord.save();
+
+
+// return NextResponse.json(
+//   { message: "Email verified successfully" },
+//   { status: 200 }
+// );
+
+
   } catch (error) {
     return NextResponse.json(
       { message: "Verification failed" },
