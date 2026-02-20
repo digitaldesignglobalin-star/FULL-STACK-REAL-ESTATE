@@ -6,7 +6,7 @@ interface IUser {
   email: string;
   password?: string;
   mobile?: string;
-  role: "user" | "broker" | "builder" | "employe" | "admin";
+  role: "user" | "builder" | "employee" | "admin";
   //  isApproved?: boolean;
   //   isBlocked?: boolean;
   image?: string
@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ["user", "broker", "builder", "employe", "admin"],
+      enum: ["user", "builder", "employe", "admin"],
       default: "user",
     },
 

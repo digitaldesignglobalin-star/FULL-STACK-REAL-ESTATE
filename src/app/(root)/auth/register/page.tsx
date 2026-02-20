@@ -18,6 +18,9 @@ export default function RegisterPage() {
   const [mobile, setMobile] = useState<string>("");
 
   const [password, setPassword] = useState<string>("");
+
+  const [role, setRole] = useState("user");
+
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -59,6 +62,7 @@ export default function RegisterPage() {
         email,
         mobile,
         password,
+        role,
       });
 
       toast.success("OTP sent to your email", { id: toastId });
@@ -87,14 +91,12 @@ export default function RegisterPage() {
     }
   };
 
-
-
   const formatPhone = (value: string) => {
-  const digits = value.replace(/\D/g, "").slice(0, 10);
+    const digits = value.replace(/\D/g, "").slice(0, 10);
 
-  if (digits.length <= 5) return digits;
-  return digits.slice(0, 5) + " " + digits.slice(5);
-};
+    if (digits.length <= 5) return digits;
+    return digits.slice(0, 5) + " " + digits.slice(5);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 relative flex items-center justify-center px-4">
@@ -147,35 +149,30 @@ export default function RegisterPage() {
           />
 
           <div className="flex w-full border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#006AC2] border border-[#80808073]">
-
-  {/* Country dropdown */}
-  <select
-    className="bg-gray-50 px-3 outline-none border-r"
-    defaultValue="+91"
-  >
-    <option value="+91">🇮🇳 +91</option>
-    {/* <option value="+1">🇺🇸 +1</option>
+            {/* Country dropdown */}
+            <select
+              className="bg-gray-50 px-3 outline-none border-r"
+              defaultValue="+91"
+            >
+              <option value="+91">🇮🇳 +91</option>
+              {/* <option value="+1">🇺🇸 +1</option>
     <option value="+44">🇬🇧 +44</option> */}
-  </select>
+            </select>
 
-  {/* Phone input */}
-  <input
-    type="tel"
-    required
-    value={formatPhone(mobile)}
-    inputMode="numeric"
-    placeholder="98765 43210"
-    className="flex-1 px-4 py-3 outline-none"
-
-    onChange={(e) => {
-      const raw = e.target.value.replace(/\D/g, "").slice(0, 10);
-      setMobile(raw);
-    }}
-  />
-
-</div>
-
-
+            {/* Phone input */}
+            <input
+              type="tel"
+              required
+              value={formatPhone(mobile)}
+              inputMode="numeric"
+              placeholder="98765 43210"
+              className="flex-1 px-4 py-3 outline-none"
+              onChange={(e) => {
+                const raw = e.target.value.replace(/\D/g, "").slice(0, 10);
+                setMobile(raw);
+              }}
+            />
+          </div>
 
           <div className="relative border border-[#80808073] rounded-lg">
             <input
@@ -195,6 +192,15 @@ export default function RegisterPage() {
               {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
             </button>
           </div>
+
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="w-full px-4 py-3 border border-[#80808073] rounded-lg"
+          >
+            <option value="user">I am Buyer/User</option>
+            <option value="builder">I am Builder / Dealer</option>
+          </select>
 
           <button
             type="submit"

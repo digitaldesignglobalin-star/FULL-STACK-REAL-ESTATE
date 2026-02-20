@@ -9,10 +9,14 @@ import { sendSMS } from "@/lib/sendSms";
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { name, email, mobile, password } = await req.json();
+    const { name, email, mobile, password, role } = await req.json();
 
-    // const existUser = await User.findOne({ email });
-    const existUser = await User.findOne({ mobile });
+    const allowedRoles = ["user", "builder"];
+
+    const safeRole = allowedRoles.includes(role) ? role : "user";
+
+    const existUser = await User.findOne({ email });
+    // const existUser = await User.findOne({ mobile });
 
     if (existUser) {
       return NextResponse.json(
@@ -36,20 +40,17 @@ export async function POST(req: NextRequest) {
     const hashedOtp = await bcrypt.hash(otp, 10);
 
     // 🔥 Delete old OTP for same email
-    
 
     // await Otp.deleteMany({ mobile });
 
-
     const existingOtp = await Otp.findOne({ mobile });
 
-if(existingOtp && existingOtp.expiresAt > new Date(Date.now()-60000)){
-  return NextResponse.json(
-    { message:"Please wait before requesting OTP again" },
-    { status:400 }
-  );
-}
-
+    if (existingOtp && existingOtp.expiresAt > new Date(Date.now() - 60000)) {
+      return NextResponse.json(
+        { message: "Please wait before requesting OTP again" },
+        { status: 400 },
+      );
+    }
 
     // 🔥 Store OTP record
     await Otp.create({
@@ -57,6 +58,7 @@ if(existingOtp && existingOtp.expiresAt > new Date(Date.now()-60000)){
       email,
       password: hashedPassword,
       mobile,
+      role: safeRole,
       otp: hashedOtp,
       expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 min
     });

@@ -6,27 +6,24 @@ import Image from "next/image";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { signIn, useSession } from "next-auth/react";
 import toast from "react-hot-toast";
-
-
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
-
-  const session = useSession()
-  console.log(session)
-
+  const session = useSession();
+  console.log(session);
 
   const isValidEmail = (email: string) =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-const isFormValid =
-  isValidEmail(email) && password.length >= 6;
-
+  const isFormValid = isValidEmail(email) && password.length >= 6;
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -43,6 +40,20 @@ const isFormValid =
     const toastId = toast.loading("Logging in...");
 
     try {
+      // const res = await signIn("credentials", {
+      //   email,
+      //   password,
+      //   redirect: false,
+      // });
+
+      // router.push("/dashboard")
+
+      // if (res?.error) {
+      //   toast.error("Invalid email or password", { id: toastId });
+      // } else {
+      //   toast.success("Welcome back!", { id: toastId });
+      // }
+
       const res = await signIn("credentials", {
         email,
         password,
@@ -51,9 +62,22 @@ const isFormValid =
 
       if (res?.error) {
         toast.error("Invalid email or password", { id: toastId });
-      } else {
-        toast.success("Welcome back!", { id: toastId });
+        return;
       }
+
+      toast.success("Welcome back!", { id: toastId });
+
+      /* ⭐ VERY IMPORTANT PART */
+      const sessionRes = await fetch("/api/auth/session");
+      const session = await sessionRes.json();
+
+      const role = session?.user?.role;
+
+      if (role === "admin") router.push("/admin");
+      else if (role === "employee") router.push("/employee");
+      else router.push("/dashboard");
+
+
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong", { id: toastId });
@@ -62,19 +86,16 @@ const isFormValid =
     }
   };
 
-
   const handleGoogleLogin = async () => {
-  try {
-    setGoogleLoading(true);
-    await signIn("google", {
-      callbackUrl: "/",
-    });
-  } catch {
-    toast.error("Google login failed");
-  } finally {
-    setGoogleLoading(false);
-  }
-};
+    try {
+      setGoogleLoading(true);
+      await signIn("google",{callbackUrl:"/after-login"})
+    } catch {
+      toast.error("Google login failed");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 relative flex items-center justify-center px-4">
@@ -106,7 +127,7 @@ const isFormValid =
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Your Email"
-            className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006AC2]"
+            className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006AC2]  border border-[#80808073]"
           />
 
           <div className="relative">
@@ -116,7 +137,7 @@ const isFormValid =
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Your Password"
-              className="w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006AC2]"
+              className="w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006AC2]  border border-[#80808073]"
             />
 
             <button
@@ -139,18 +160,17 @@ const isFormValid =
           </div>
 
           <button
-  type="submit"
-  disabled={!isFormValid || loading}
-  className={`w-full py-3 rounded-lg font-semibold transition 
+            type="submit"
+            disabled={!isFormValid || loading}
+            className={`w-full py-3 rounded-lg font-semibold transition 
   ${
     !isFormValid || loading
       ? "bg-gray-400 cursor-not-allowed text-white"
       : "bg-[#006AC2] text-white hover:opacity-90"
   }`}
->
-  {loading ? "Logging in..." : "Login"}
-</button>
-
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
         </form>
 
         {/* Divider */}
@@ -161,8 +181,11 @@ const isFormValid =
         </div>
 
         {/* Google Button */}
-        <button className="w-full border border-[#808080ad] py-3 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 transition cursor-pointer" onClick={handleGoogleLogin}
-  disabled={googleLoading}>
+        <button
+          className="w-full border border-[#808080ad] py-3 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 transition cursor-pointer"
+          onClick={handleGoogleLogin}
+          disabled={googleLoading}
+        >
           <Image
             src="https://www.svgrepo.com/show/475656/google-color.svg"
             alt="Google"
@@ -170,7 +193,7 @@ const isFormValid =
             height={20}
           />
           {/* Continue with Google */}
-           {googleLoading ? "Redirecting..." : "Continue with Google"}
+          {googleLoading ? "Redirecting..." : "Continue with Google"}
         </button>
 
         {/* Register Redirect */}

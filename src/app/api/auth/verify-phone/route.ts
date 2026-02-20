@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
       email: tempUser.email,
       password: tempUser.password,
       mobile: tempUser.mobile,
+      role: tempUser.role || "user",
     });
 
     // delete OTP

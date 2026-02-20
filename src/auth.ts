@@ -26,7 +26,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!user) {
           throw new Error("user does not exist");
         }
-        const isMatch = await bcrypt.compare(password, user.password);
+        if (!user.password) {
+  throw new Error("Use Google login");
+}
+
+const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
           throw new Error("incorrect password");
@@ -56,6 +60,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             name: user.name,
             email: user.email,
             image: user.image,
+            role:"user"
           });
         }
         user.id = dbUser._id.toString();
