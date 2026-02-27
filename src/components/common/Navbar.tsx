@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Menu, X, Info, Headphones, FileText, Settings } from "lucide-react";
+import Link from "next/link";
 
 export default function Navbar() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -25,9 +26,9 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="hidden sm:flex items-center gap-2 bg-white text-[#1a1a1a] px-4 py-1.5 rounded-md font-bold text-sm hover:bg-gray-100 transition cursor-pointer">
+          <Link href="/dashboard/post-property" className="hidden sm:flex items-center gap-2 bg-white text-[#1a1a1a] px-4 py-1.5 rounded-md font-bold text-sm hover:bg-gray-100 transition cursor-pointer">
             Post property <span className="bg-green-600 text-white text-[10px] px-1 rounded ml-1">FREE</span>
-          </button>
+          </Link>
 
           <div className="h-6 w-[1px] bg-gray-700 mx-2 hidden md:block" />
 
