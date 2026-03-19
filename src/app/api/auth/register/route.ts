@@ -3,9 +3,38 @@ import User from "@/models/user.model";
 import Otp from "@/models/otp.model";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
-// import { transporter } from "@/lib/mailer";
-import { sendSMS } from "@/lib/sendSms";
-
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     description: Register a new user with mobile number, email and password. Sends an OTP to verify the mobile number.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               mobile:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [user, builder]
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *       400:
+ *         description: Mobile already registered or missing requirements
+ *       500:
+ *         description: Register error
+ */
 export async function POST(req: NextRequest) {
   try {
     await connectDB();

@@ -2,16 +2,16 @@ import mongoose from "mongoose";
 
 const PropertySchema = new mongoose.Schema({
   // ===== BASIC =====
-  purpose: String,
+  purpose: { type: String, trim: true },
   category: String,
-  type: String,
+  type: { type: String, trim: true },
 
   // ===== LOCATION =====
-  city: String,
-  locality: String,
+  city: { type: String, trim: true },
+  locality: { type: String, trim: true },
 
   // ===== PROFILE =====
-  bhk: String,
+  bhk: Number,
   bed: String,
   bath: String,
   bal: String,
@@ -20,12 +20,14 @@ const PropertySchema = new mongoose.Schema({
   tenant: String,
   broker: String,
 
-  area: String,
+  area: Number,
   areaUnit: String,
   availableFrom: String,
 
   // ===== PRICING =====
-  price: String,
+  // price: { type: Number, trim: true },
+  price: Number,
+  pricePerSqft: Number,
   deposit: String,
   maintenance: String,
   description: String,
@@ -36,7 +38,10 @@ const PropertySchema = new mongoose.Schema({
 
   // ===== MEDIA =====
 
-  images: [String], // cloudinary URLs
+  images: {
+    type: [String],
+    default: [],
+  }, // cloudinary URLs
   video: String, // cloudinary URL
   youtube: String,
 

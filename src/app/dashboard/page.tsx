@@ -27,6 +27,7 @@ import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import axios from "axios";
 import { useEffect } from "react";
+import Link from "next/link";
 
 // --- Types for TypeScript ---
 interface PropertyCardProps {
@@ -38,6 +39,7 @@ interface SectionProps {
   subtitle: string;
   scrollRef: RefObject<HTMLDivElement | null>;
   items: any[];
+  status: string;
 }
 
 export default function ProfessionalHome() {
@@ -56,6 +58,8 @@ export default function ProfessionalHome() {
   const [maxPrice, setMaxPrice] = useState<string>("");
 
   const [properties, setProperties] = useState<any[]>([]);
+
+  const [loading, setLoading] = useState(true);
 
   const handleReset = () => {
     setActivePropertyType("Residential");
@@ -89,40 +93,44 @@ export default function ProfessionalHome() {
   const readyToMoveRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-  const load = async () => {
-    try {
-      const res = await axios.get("/api/auth/property/get");
-      setProperties(res.data);
-    } catch (err) {
-      console.error("Failed loading properties", err);
-    }
-  };
+    const load = async () => {
+      try {
+        const res = await axios.get("/api/auth/property/get");
+        setProperties(res.data);
+      } catch (err) {
+        console.error("Failed loading properties", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  load();
-}, []);
+    load();
+  }, []);
 
-const newProjects = properties.filter(
-  (p) => p.status === "new"
-);
+  const newProjects = properties.filter((p) => p.status === "new");
 
-const launched = properties.filter(
-  (p) => p.status === "launched"
-);
+  const launched = properties.filter((p) => p.status === "launched");
 
-const ready = properties.filter(
-  (p) => p.status === "ready"
-);
+  const ready = properties.filter((p) => p.status === "ready");
 
-const underConstruction = properties.filter(
-  (p) => p.status === "under-construction"
-);
+  const underConstruction = properties.filter(
+    (p) => p.status === "under-construction",
+  );
+
+  if (loading) {
+    return (
+      <div className="p-10 text-center text-lg font-semibold">
+        Loading properties...
+      </div>
+    );
+  }
 
   // --- Property Card Component ---
   const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => (
     <div className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group mb-2">
       <div className="relative h-40 sm:h-44 bg-gray-100">
         <img
-          src={property.images?.[0] || "/noimage.png"}
+          src={property.images?.[0] ?? "/noimage.png"}
           // ? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=600"
           // : "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600"
 
@@ -166,6 +174,7 @@ const underConstruction = properties.filter(
     subtitle,
     scrollRef,
     items,
+    status,
   }) => (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 relative group">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 sm:mb-6 gap-2">
@@ -175,9 +184,12 @@ const underConstruction = properties.filter(
           </h2>
           <p className="text-sm text-slate-500">{subtitle}</p>
         </div>
-        <button className="text-blue-600 font-bold text-sm flex items-center gap-1 hover:underline cursor-pointer">
+        <Link
+          href={`/dashboard/properties/${status}`}
+          className="text-blue-600 font-bold text-sm flex items-center gap-1 hover:underline cursor-pointer"
+        >
           View All <ArrowRight size={16} />
-        </button>
+        </Link>
       </div>
       <div className="relative">
         <button
@@ -541,32 +553,36 @@ const underConstruction = properties.filter(
       {/* --- CONTENT CATEGORIES (Always Visible) --- */}
       <div className="py-4 sm:py-8 bg-white relative z-10">
         <PropertySection
-  title="New Projects for You"
-  subtitle="Curated listings for your dream home"
-  scrollRef={newProjectsRef}
-  items={newProjects}
-/>
+          title="New Projects for You"
+          subtitle="Curated listings for your dream home"
+          scrollRef={newProjectsRef}
+          items={newProjects}
+          status="new"
+        />
 
-<PropertySection
-  title="Newly Launched Properties"
-  subtitle="Freshly added projects"
-  scrollRef={newlyLaunchedRef}
-  items={launched}
-/>
+        <PropertySection
+          title="Newly Launched Properties"
+          subtitle="Freshly added projects"
+          scrollRef={newlyLaunchedRef}
+          items={launched}
+          status="launched"
+        />
 
-<PropertySection
-  title="Ready to Move"
-  subtitle="Move into your new home today"
-  scrollRef={readyToMoveRef}
-  items={ready}
-/>
+        <PropertySection
+          title="Ready to Move"
+          subtitle="Move into your new home today"
+          scrollRef={readyToMoveRef}
+          items={ready}
+          status="ready"
+        />
 
-<PropertySection
-  title="Under Construction"
-  subtitle="Great investment opportunities"
-  scrollRef={underConstructionRef}
-  items={underConstruction}
-/>
+        <PropertySection
+          title="Under Construction"
+          subtitle="Great investment opportunities"
+          scrollRef={underConstructionRef}
+          items={underConstruction}
+          status="under-construction"
+        />
       </div>
 
       {/* --- LOGIN MODAL --- */}

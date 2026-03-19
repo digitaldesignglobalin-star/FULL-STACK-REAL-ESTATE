@@ -4,78 +4,138 @@ import connectDB from "@/lib/db";
 import Property from "@/models/property.model";
 
 export async function POST(req: Request) {
-  await connectDB();
+  try {
+    await connectDB();
 
-  const data = await req.formData();
+    const data = await req.formData();
 
-  const images = data.getAll("images");
-  const video = data.get("video");
+    const images = data.getAll("images");
+    const video = data.get("video");
 
-  const uploadedImages: string[] = [];
+    const uploadedImages: string[] = [];
 
-  for (const file of images as File[]) {
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    for (const file of images as File[]) {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
 
-    const uploaded: any = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { folder: "properties" },
-        (err: any, result: any) => {
-          if (err) reject(err);
-          else resolve(result);
-        },
-      );
+      const uploaded: any = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "properties" },
+          (err: any, result: any) => {
+            if (err) reject(err);
+            else resolve(result);
+          },
+        );
 
-      stream.end(buffer);
-    });
+        stream.end(buffer);
+      });
 
-    uploadedImages.push(uploaded.secure_url);
+      uploadedImages.push(uploaded.secure_url);
+    }
+
+    let videoUrl = "";
+
+    if (video && video instanceof File) {
+      const bytes = await video.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const uploaded: any = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { resource_type: "video" },
+          (err: any, result: any) => {
+            if (err) reject(err);
+            else resolve(result);
+          },
+        );
+
+        stream.end(buffer);
+      });
+
+      videoUrl = uploaded.secure_url;
+    }
+
+    // ✅ SAVE ALL FIELDS
+    const propertyData: any = {};
+
+    // data.forEach((value, key) => {
+    //   propertyData[key] = value;
+    // });
+
+    data.forEach((value, key) => {
+  if (key !== "images" && key !== "video") {
+    propertyData[key] = value.toString(); // 🔥 ALWAYS include
   }
-
-  let videoUrl = "";
-
-  if (video && video instanceof File) {
-    const bytes = await video.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const uploaded: any = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { resource_type: "video" },
-        (err: any, result: any) => {
-          if (err) reject(err);
-          else resolve(result);
-        },
-      );
-
-      stream.end(buffer);
-    });
-
-    videoUrl = uploaded.secure_url;
-  }
-
-  // const property = await Property.create({
-  //   city: data.get("city"),
-  //   locality: data.get("locality"),
-  //   price: data.get("price"),
-  //   purpose: data.get("purpose"),
-  //   type: data.get("type"),
-  //   bhk: data.get("bhk"),
-  //   description: data.get("description"),
-  //   images: uploadedImages,
-  //   video: videoUrl,
-  //   status: data.get("status"),
-  // });
-
-  const propertyData: any = {};
-
-data.forEach((value, key) => {
-  propertyData[key] = value;
 });
 
-propertyData.images = uploadedImages;
-propertyData.video = videoUrl;
+    // convert numeric fields AFTER the loop
+    // ✅ FIX BHK PROPERLY
+    if (propertyData.bhk) {
+      const parsed = Number(propertyData.bhk);
 
-const property = await Property.create(propertyData);
+      if (isNaN(parsed)) {
+        return NextResponse.json(
+          { message: "Invalid BHK value" },
+          { status: 400 },
+        );
+      }
 
-  return NextResponse.json(property);
+      propertyData.bhk = parsed;
+    }
+
+    if (propertyData.price) {
+      const price = Number(propertyData.price);
+
+      if (isNaN(price)) {
+        return NextResponse.json({ message: "Invalid price" }, { status: 400 });
+      }
+
+      propertyData.price = price;
+    }
+
+    if (propertyData.area) {
+      const area = Number(propertyData.area);
+
+      if (isNaN(area)) {
+        return NextResponse.json({ message: "Invalid area" }, { status: 400 });
+      }
+
+      propertyData.area = area;
+    }
+
+    if ("pricePerSqft" in propertyData) {
+  const pps = Number(propertyData.pricePerSqft);
+
+  if (!isNaN(pps)) {
+    propertyData.pricePerSqft = pps;
+  } else {
+    delete propertyData.pricePerSqft;
+  }
+}
+
+    propertyData.images = uploadedImages;
+    propertyData.video = videoUrl;
+
+    // ✅ secure status
+    const allowedStatus = ["new", "launched", "ready", "under-construction"];
+
+    if (!allowedStatus.includes(propertyData.status)) {
+      propertyData.status = "new";
+    }
+
+    // ✅ validation
+    if (!propertyData.city || !propertyData.price) {
+      return NextResponse.json(
+        { message: "City and price required" },
+        { status: 400 },
+      );
+    }
+
+    const property = await Property.create(propertyData);
+
+    return NextResponse.json(property);
+  } catch (err) {
+    console.error(err);
+
+    return NextResponse.json({ message: "Server error" }, { status: 500 });
+  }
 }

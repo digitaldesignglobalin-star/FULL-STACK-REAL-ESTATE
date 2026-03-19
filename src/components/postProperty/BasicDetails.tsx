@@ -31,6 +31,7 @@ export default function BasicDetails({ form, setForm }: BasicDetailsProps) {
         <Button
           variant={form.purpose === "sell" ? "default" : "outline"}
           onClick={() => setForm({ ...form, purpose: "sell" })}
+          className="border border-gray-500 rounded-lg px-4 py-2 cursor-pointer"
         >
           Sell
         </Button>
@@ -38,6 +39,8 @@ export default function BasicDetails({ form, setForm }: BasicDetailsProps) {
         <Button
           variant={form.purpose === "rent" ? "default" : "outline"}
           onClick={() => setForm({ ...form, purpose: "rent" })}
+          className="border border-gray-500 rounded-lg px-4 py-2 cursor-pointer"
+
         >
           Rent / Lease
         </Button>
@@ -45,6 +48,8 @@ export default function BasicDetails({ form, setForm }: BasicDetailsProps) {
         <Button
           variant={form.purpose === "pg" ? "default" : "outline"}
           onClick={() => setForm({ ...form, purpose: "pg" })}
+          className="border border-gray-500 rounded-lg px-4 py-2 cursor-pointer"
+
         >
           PG
         </Button>
@@ -59,14 +64,14 @@ export default function BasicDetails({ form, setForm }: BasicDetailsProps) {
         onValueChange={(value) => setForm({ ...form, category: value })}
         className="flex gap-8 mb-6"
       >
-        <div className="flex items-center gap-2">
-          <RadioGroupItem value="residential" id="r1" />
-          <label htmlFor="r1">Residential</label>
+        <div className="flex items-center gap-2 border border-gray-500 rounded-lg px-3 py-2 cursor-pointer">
+          <RadioGroupItem value="residential" id="r1" className="border border-gray-500 cursor-pointer"/>
+          <label className="cursor-pointer" htmlFor="r1">Residential</label>
         </div>
 
-        <div className="flex items-center gap-2">
-          <RadioGroupItem value="commercial" id="r2" />
-          <label htmlFor="r2">Commercial</label>
+        <div className="flex items-center gap-2 border border-gray-500 rounded-lg px-3 py-2 cursor-pointer">
+          <RadioGroupItem value="commercial" id="r2"  className="border border-gray-500 cursor-pointer"/>
+          <label className="cursor-pointer" htmlFor="r2">Commercial</label>
         </div>
       </RadioGroup>
 
@@ -75,7 +80,7 @@ export default function BasicDetails({ form, setForm }: BasicDetailsProps) {
           <Button
             key={item}
             variant={form.type === item ? "default" : "outline"}
-            className="rounded-full"
+            className=" border border-gray-500 rounded-lg px-4 py-2 cursor-pointer"
             onClick={() => setForm({ ...form, type: item })}
           >
             {item}

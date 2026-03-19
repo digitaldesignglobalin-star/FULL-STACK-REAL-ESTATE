@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import type { FormType } from "@/app/dashboard/post-property/page";
+import { toast } from "sonner";
 
 interface PropertyProfileProps {
   form: FormType;
@@ -29,6 +30,8 @@ export default function PropertyProfile({
   //   set: (v: string) => void;
   // };
 
+  const [customBhk, setCustomBhk] = useState("");
+
   interface PillProps {
     value: string;
     selected: string;
@@ -46,8 +49,8 @@ export default function PropertyProfile({
       }
       className={`px-4 py-2 rounded-full border text-sm ${
         selected === value
-          ? "bg-blue-600 text-white border-blue-600"
-          : "bg-white"
+          ? "bg-blue-600 text-white border-blue-600 cursor-pointer"
+          : "bg-white border border-gray-400 rounded-lg px-4 py-2 cursor-pointer"
       }`}
     >
       {value}
@@ -55,15 +58,15 @@ export default function PropertyProfile({
   );
 
   interface NumRowProps {
-  title: string;
-  state: string;
-  field: keyof FormType;
-}
+    title: string;
+    state: string;
+    field: keyof FormType;
+  }
 
   const NumRow = ({ title, state, field }: NumRowProps) => (
     <div>
       <p className="text-sm mb-2">{title}</p>
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap ">
         {["1", "2", "3", "4", "5", "More"].map((v) => (
           <Pill key={v} value={v} selected={state} field={field} />
         ))}
@@ -88,7 +91,7 @@ export default function PropertyProfile({
                 status: e.target.value as FormType["status"],
               }))
             }
-            className="border rounded-md p-2 mb-6"
+            className="border rounded-md p-2 mb-6 border-gray-400 px-4 py-2 cursor-pointer"
           >
             <option value="new">New Project</option>
             <option value="launched">Newly Launched</option>
@@ -99,10 +102,52 @@ export default function PropertyProfile({
           <div>
             <p className="font-medium mb-3">Your apartment is a</p>
             <div className="flex gap-3">
-              {["1 BHK", "2 BHK", "3 BHK", "Other"].map((v) => (
-                <Pill key={v} value={v} selected={form.bhk} field="bhk" />
+              {["1", "2", "3", "Other"].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => {
+                    if (v === "Other") {
+                      setForm((prev) => ({ ...prev, bhk: "Other" }));
+                    } else {
+                      setCustomBhk(""); // reset custom
+                      setForm((prev) => ({ ...prev, bhk: v }));
+                    }
+                  }}
+                  className={`px-4 py-2 rounded-full border text-sm ${
+                    form.bhk === v
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white border border-gray-400"
+                  }`}
+                >
+                  {v} BHK
+                </button>
               ))}
             </div>
+            {form.bhk === "Other" && (
+              <input
+                type="number"
+                autoFocus
+                placeholder="Enter BHK (e.g. 4, 5...)"
+                value={customBhk}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  if (Number(value) > 0 && Number(value) <= 20) {
+                    setCustomBhk(value);
+
+                    // 🔥 update form with real value
+                    setForm((prev) => ({
+                      ...prev,
+                      bhk: value,
+                    }));
+                  } else {
+                    setCustomBhk("");
+                  }
+                }}
+                className="border w-full p-2 mt-2 rounded-lg border-gray-400"
+              />
+            )}
           </div>
 
           <div>
@@ -110,18 +155,52 @@ export default function PropertyProfile({
             <div className="flex gap-3">
               <Input
                 value={form.area}
-                onChange={(e) => setForm({ ...form, area: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  if (Number(value) < 0) {
+                    alert("Invalid area");
+                    return;
+                  }
+
+                  setForm({ ...form, area: value });
+                }}
                 placeholder="Carpet Area"
+                className="border border-gray-400 rounded-lg px-4 py-2 "
+                type="number"
+                min="0"
               />
               <select
                 value={form.areaUnit}
                 onChange={(e) => setForm({ ...form, areaUnit: e.target.value })}
-                className="border rounded px-3"
+                className=" border border-gray-400 rounded-lg px-4 py-1 cursor-pointer"
               >
                 <option>sq.ft.</option>
                 <option>sq.m.</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <p className="font-medium mb-2">Price per sq.ft</p>
+
+            <Input
+              value={form.pricePerSqft}
+              onChange={(e) => {
+                const value = e.target.value;
+
+                if (Number(value) < 0) {
+                  toast.error("Invalid amount");
+                  return;
+                }
+
+                setForm({ ...form, pricePerSqft: value });
+              }}
+              placeholder="₹ Price per sq.ft"
+              type="number"
+              min="0"
+              className="border border-gray-400 rounded-lg px-4 py-2"
+            />
           </div>
 
           <div className="space-y-5">
@@ -165,6 +244,7 @@ export default function PropertyProfile({
               setForm({ ...form, availableFrom: e.target.value })
             }
             type="date"
+            className="border border-gray-400 rounded-lg px-4 py-2 cursor-pointer"
           />
         </div>
       )}
@@ -192,7 +272,16 @@ export default function PropertyProfile({
 
         <Input
           value={form.price}
-          onChange={(e) => setForm({ ...form, price: e.target.value })}
+          onChange={(e) => {
+            const value = e.target.value;
+
+            if (Number(value) < 0) {
+              toast.error("Invalid amount");
+              return;
+            }
+
+            setForm({ ...form, price: value });
+          }}
           placeholder={
             form.purpose === "sell"
               ? "₹ Property Sale Price"
@@ -200,6 +289,9 @@ export default function PropertyProfile({
                 ? "₹ Expected Monthly Rent"
                 : "₹ PG Monthly Charges"
           }
+          type="number"
+          min="0"
+          className="border border-gray-400 rounded-lg px-4 py-2 "
         />
       </div>
 
@@ -209,7 +301,7 @@ export default function PropertyProfile({
           Are you ok with brokers contacting you?
         </p>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 ">
           {["Yes", "No"].map((v) => (
             <Pill key={v} value={v} selected={form.broker} field="broker" />
           ))}

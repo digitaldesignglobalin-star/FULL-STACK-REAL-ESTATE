@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import type { FormType } from "@/app/dashboard/post-property/page";
+import { toast } from "sonner";
 // type Props = {
 //   form.purpose?: "sell" | "rent" | "pg"
 // }
@@ -19,7 +20,9 @@ const Pill = ({ value, selected, set }: PillProps) => (
     onClick={() => set(value)}
     className={`px-4 py-2 rounded-full border text-sm
     ${
-      selected === value ? "bg-blue-600 text-white border-blue-600" : "bg-white"
+      selected === value
+        ? "bg-blue-600 text-white border-blue-600"
+        : "bg-white border border-gray-400 rounded-lg px-4 py-2"
     }`}
   >
     {value}
@@ -52,9 +55,16 @@ export default function PricingDetails({
 
         <Input
           value={form.price}
-          onChange={(e) =>
-            setForm((prev) => ({ ...prev, price: e.target.value }))
-          }
+          onChange={(e) => {
+            const value = e.target.value;
+
+            if (Number(value) < 0) {
+              toast.error("Invalid amount");
+              return;
+            }
+
+            setForm((prev) => ({ ...prev, price: value }));
+          }}
           placeholder={
             form.purpose === "sell"
               ? "₹ Enter sale price"
@@ -62,6 +72,8 @@ export default function PricingDetails({
                 ? "₹ Enter monthly rent"
                 : "₹ Enter PG charges"
           }
+          className="border border-gray-400 rounded-lg px-4 py-2"
+          type="number"
         />
       </div>
 
@@ -73,10 +85,20 @@ export default function PricingDetails({
             <p className="font-medium mb-2">Security Deposit</p>
             <Input
               value={form.deposit}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, deposit: e.target.value }))
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+
+                if (Number(value) < 0) {
+                  toast.error("Invalid amount");
+                  return;
+                }
+
+                setForm((prev) => ({ ...prev, deposit: value }));
+              }}
               placeholder="₹ Deposit amount"
+              className="border border-gray-400 rounded-lg px-4 py-2"
+              type="number"
+              min="0"
             />
           </div>
 
@@ -98,10 +120,20 @@ export default function PricingDetails({
 
             <Input
               value={form.maintenance}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, maintenance: e.target.value }))
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+
+                if (Number(value) < 0) {
+                  toast.error("Invalid amount");
+                  return;
+                }
+
+                setForm((prev) => ({ ...prev, maintenance: value }));
+              }}
               placeholder="₹ Monthly maintenance"
+              className="border border-gray-400 rounded-lg px-4 py-2"
+              type="number"
+              min="0"
             />
           </div>
         </>
@@ -157,7 +189,8 @@ export default function PricingDetails({
           onChange={(e) =>
             setForm((prev) => ({ ...prev, description: e.target.value }))
           }
-          className="border rounded p-3 w-full h-32"
+          placeholder="Enter property description..."
+          className="border rounded-lg p-3 w-full h-32  border-gray-400 px-4 py-2"
         />
       </div>
     </div>
