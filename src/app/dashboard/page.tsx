@@ -107,15 +107,16 @@ export default function ProfessionalHome() {
     load();
   }, []);
 
-  const newProjects = properties.filter((p) => p.status === "new");
+  const newProjects = properties.filter((p) => p.status === "new").slice(0, 6);
+  const launched = properties
+    .filter((p) => p.status === "launched")
+    .slice(0, 6);
 
-  const launched = properties.filter((p) => p.status === "launched");
+  const ready = properties.filter((p) => p.status === "ready").slice(0, 6);
 
-  const ready = properties.filter((p) => p.status === "ready");
-
-  const underConstruction = properties.filter(
-    (p) => p.status === "under-construction",
-  );
+  const underConstruction = properties
+    .filter((p) => p.status === "under-construction")
+    .slice(0, 6);
 
   if (loading) {
     return (

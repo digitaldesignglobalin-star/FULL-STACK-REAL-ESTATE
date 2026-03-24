@@ -22,6 +22,9 @@ export type FormType = {
   purpose: "sell" | "rent" | "pg";
   category: string;
   type: string;
+  roomType?: string;
+  gender?: string;
+  food?: string;
   status: string;
   city: string;
   locality: string;
@@ -176,32 +179,67 @@ export default function PostPropertyPage() {
     }
 
     // STEP 2 → PROPERTY PROFILE
-    if (step === 2) {
-      if (
-        !form.bhk ||
-        !form.area ||
-        !form.furnish ||
-        !form.age ||
-        !form.bed ||
-        !form.bath ||
-        !form.bal ||
-        !form.broker
-      ) {
-        toast.error("Please complete property profile");
-        return;
-      }
-
-      // rent / pg extra validation
-      if ((form.purpose === "rent" || form.purpose === "pg") && !form.tenant) {
-        toast.error("Please select tenant type");
-        return;
-      }
-
-      if (form.purpose === "rent" && !form.availableFrom) {
-        toast.error("Please select available date");
-        return;
-      }
+    // STEP 2 → PROPERTY PROFILE
+// STEP 2 → PROPERTY PROFILE
+if (step === 2) {
+  if (form.purpose === "pg") {
+    // ✅ PG VALIDATION - with BHK, Area, Price per sqft
+    if (!form.bhk) {
+      toast.error("Please select room configuration");
+      return;
     }
+    if (!form.area || Number(form.area) <= 0) {
+      toast.error("Please enter room size");
+      return;
+    }
+    if (!form.pricePerSqft || Number(form.pricePerSqft) <= 0) {
+      toast.error("Please enter price per sq.ft");
+      return;
+    }
+    if (!form.age) {
+      toast.error("Please select age of property");
+      return;
+    }
+    if (!form.tenant) {
+      toast.error("Please select tenant type");
+      return;
+    }
+    if (!form.price || Number(form.price) <= 0) {
+      toast.error("Please enter PG monthly rent");
+      return;
+    }
+    if (!form.broker) {
+      toast.error("Please select broker contact preference");
+      return;
+    }
+  } else {
+    // ✅ NORMAL PROPERTY VALIDATION (sell/rent)
+    if (
+      !form.bhk ||
+      !form.area ||
+      !form.pricePerSqft ||
+      !form.furnish ||
+      !form.age ||
+      !form.bed ||
+      !form.bath ||
+      !form.bal ||
+      !form.broker
+    ) {
+      toast.error("Please complete property profile");
+      return;
+    }
+
+    if (form.purpose === "rent" && !form.tenant) {
+      toast.error("Please select tenant type");
+      return;
+    }
+
+    if (form.purpose === "rent" && !form.availableFrom) {
+      toast.error("Please select available date");
+      return;
+    }
+  }
+}
 
     // STEP 3 → PHOTOS
     if (step === 3) {
