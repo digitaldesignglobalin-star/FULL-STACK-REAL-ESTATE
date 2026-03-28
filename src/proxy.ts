@@ -12,6 +12,7 @@ export async function proxy(req: NextRequest) {
     "/api/auth",
     "/favicon.ico",
     "/_next",
+    "/admin" //remove it later after testing
   ];
   if (publicRoutes.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();

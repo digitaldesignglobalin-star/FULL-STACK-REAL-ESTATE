@@ -1,15 +1,18 @@
 import mongoose from "mongoose";
 
-interface IUser {
-  _id?: mongoose.Types.ObjectId;
+export interface IUser extends mongoose.Document {
   name: string;
   email: string;
   password?: string;
   mobile?: string;
   role: "user" | "builder" | "employee" | "admin";
-  //  isApproved?: boolean;
-  //   isBlocked?: boolean;
-  image?: string
+  isApproved: boolean;
+  isBlocked: boolean;
+  image?: string;
+  hasSubscription: boolean;
+  subscriptionExpiry?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const userSchema = new mongoose.Schema<IUser>(
@@ -28,40 +31,50 @@ const userSchema = new mongoose.Schema<IUser>(
 
     password: {
       type: String,
-      required: false,
     },
 
     mobile: {
       type: String,
-      required: false,
-      unique:true,
       sparse: true,
     },
     role: {
       type: String,
-      enum: ["user", "builder", "employe", "admin"],
+      enum: ["user", "builder", "employee", "admin"],
       default: "user",
     },
 
-    // "user" | "broker" | "builder" | "employe" | "admin"
+    isApproved: {
+      type: Boolean,
+      default: true,
+    },
 
-    //   isApproved: {
-    //       type: Boolean,
-    //       default: false,
-    //     },
-
-    //     isBlocked: {
-    //       type: Boolean,
-    //       default: false,
-    //     },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
 
     image: {
-type : String
-    }
+      type: String,
+    },
+
+    hasSubscription: {
+      type: Boolean,
+      default: false,
+    },
+
+    subscriptionExpiry: {
+      type: Date,
+    },
   },
   { timestamps: true },
 );
 
-const User = mongoose.models.User || mongoose.model("User", userSchema);
+userSchema.index({ email: 1 });
+userSchema.index({ role: 1 });
+userSchema.index({ isBlocked: 1 });
+userSchema.index({ hasSubscription: 1 });
+userSchema.index({ subscriptionExpiry: 1 });
+
+const User = mongoose.models.User || mongoose.model<IUser>("User", userSchema);
 
 export default User;

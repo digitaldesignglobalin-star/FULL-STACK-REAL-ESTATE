@@ -2,10 +2,13 @@ import { NextResponse } from "next/server";
 import cloudinary from "@/lib/cloudinary";
 import connectDB from "@/lib/db";
 import Property from "@/models/property.model";
+import { auth } from "@/auth";
 
 export async function POST(req: Request) {
   try {
     await connectDB();
+
+    const session = await auth();
 
     const data = await req.formData();
 
@@ -115,14 +118,16 @@ export async function POST(req: Request) {
     propertyData.images = uploadedImages;
     propertyData.video = videoUrl;
 
-    // ✅ secure status
-    const allowedStatus = ["new", "launched", "ready", "under-construction"];
-
-    if (!allowedStatus.includes(propertyData.status)) {
-      propertyData.status = "new";
+    if (session?.user?.id) {
+      propertyData.postedBy = session.user.id;
     }
 
-    // ✅ validation
+    const allowedStatus = ["new", "launched", "ready", "under-construction", "pending"];
+
+    if (!allowedStatus.includes(propertyData.status)) {
+      propertyData.status = "pending";
+    }
+
     if (!propertyData.city || !propertyData.price) {
       return NextResponse.json(
         { message: "City and price required" },

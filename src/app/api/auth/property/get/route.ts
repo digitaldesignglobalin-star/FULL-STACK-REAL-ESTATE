@@ -17,14 +17,16 @@ export async function GET(req: Request) {
   const type = searchParams.get("type");
   const postedBy = searchParams.get("postedBy");
 
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "10");
+  const skip = (page - 1) * limit;
+
   const conditions: any[] = [];
 
-  // STATUS
   if (status) {
     conditions.push({ status });
   }
 
-  // SEARCH (city, locality, type)
   if (search) {
     conditions.push({
       $or: [
@@ -35,52 +37,52 @@ export async function GET(req: Request) {
     });
   }
 
-  // LOCALITY
   if (locality) {
     conditions.push({
       locality: { $regex: locality, $options: "i" },
     });
   }
 
-  // PRICE
   if (minPrice || maxPrice) {
     const priceFilter: any = {};
-
     if (minPrice) priceFilter.$gte = Number(minPrice);
     if (maxPrice) priceFilter.$lte = Number(maxPrice);
-
     conditions.push({ price: priceFilter });
   }
 
-  // BHK
-  // BHK
   if (bhk) {
-  const parsed = Number(bhk);
-
-  if (!isNaN(parsed)) {
-    conditions.push({ bhk: parsed });
+    const parsed = Number(bhk);
+    if (!isNaN(parsed)) {
+      conditions.push({ bhk: parsed });
+    }
   }
-}
-  // AREA
+
   if (minArea) {
     conditions.push({ area: { $gte: Number(minArea) } });
   }
 
-  // TYPE
   if (type) {
     conditions.push({ type: { $regex: `^${type}$`, $options: "i" } });
   }
 
-  // POSTED BY
   if (postedBy) {
     conditions.push({ postedBy: { $regex: `^${postedBy}$`, $options: "i" } });
   }
 
   const query = conditions.length ? { $and: conditions } : {};
 
-  console.log("FINAL QUERY:", JSON.stringify(query, null, 2));
+  const [properties, total] = await Promise.all([
+    Property.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Property.countDocuments(query),
+  ]);
 
-  const properties = await Property.find(query).sort({ createdAt: -1 });
-
-  return NextResponse.json(properties);
+  return NextResponse.json({
+    properties,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  });
 }

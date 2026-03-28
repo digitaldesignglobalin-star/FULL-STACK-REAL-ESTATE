@@ -95,8 +95,10 @@ export default function ProfessionalHome() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await axios.get("/api/auth/property/get");
-        setProperties(res.data);
+        const res = await axios.get("/api/auth/property/get", {
+          params: { limit: 100 },
+        });
+        setProperties(res.data.properties || []);
       } catch (err) {
         console.error("Failed loading properties", err);
       } finally {

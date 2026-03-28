@@ -3,6 +3,7 @@ import User from "@/models/user.model";
 import Otp from "@/models/otp.model";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
+import { sendSMS } from "@/lib/sendSms";
 /**
  * @swagger
  * /api/auth/register:
