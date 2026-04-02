@@ -28,8 +28,16 @@ export interface IProperty extends mongoose.Document {
   images: string[];
   video?: string;
   youtube?: string;
+  featured?: boolean;
   status: "new" | "launched" | "ready" | "under-construction" | "pending" | "rejected";
   postedBy?: mongoose.Types.ObjectId;
+  inquiries?: {
+    name: string;
+    email: string;
+    phone?: string;
+    message?: string;
+    createdAt: Date;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -79,10 +87,23 @@ const PropertySchema = new mongoose.Schema<IProperty>(
       default: "pending",
     },
 
+    featured: {
+      type: Boolean,
+      default: false,
+    },
+
     postedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+
+    inquiries: [{
+      name: String,
+      email: String,
+      phone: String,
+      message: String,
+      createdAt: { type: Date, default: Date.now }
+    }],
   },
   { timestamps: true }
 );

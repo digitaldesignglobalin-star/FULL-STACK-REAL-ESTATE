@@ -53,7 +53,6 @@ export type FormType = {
 };
 
 export default function PostPropertyPage() {
-  // const [step, setStep] = useState(0);
   const [step, setStep] = useState(() => {
     if (typeof window !== "undefined") {
       const savedStep = localStorage.getItem("propertyStep");
@@ -65,39 +64,9 @@ export default function PostPropertyPage() {
 
   const [mounted, setMounted] = useState(false);
 
-  
-
-  // const [form, setForm] = useState<FormType>({
-  //   purpose: "rent",
-  //   category: "",
-  //   type: "",
-  //   status: "new",
-  //   city: "",
-  //   locality: "",
-  //   bhk: "",
-  //   bed: "",
-  //   bath: "",
-  //   bal: "",
-  //   furnish: "",
-  //   age: "",
-  //   tenant: "",
-  //   broker: "",
-  //   area: "",
-  //   areaUnit: "sq.ft.",
-  //   availableFrom: "",
-  //   price: "",
-  //   deposit: "",
-  //   maintenance: "",
-  //   description: "",
-  //   ownership: "Freehold",
-  //   negotiable: "Yes",
-  //   maintenanceType: "Included",
-  //   images: [],
-  //   video: null,
-  //   youtube: "",
-  // });
-
-  // const next = () => setStep((s) => Math.min(s + 1, steps.length - 1));
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [form, setForm] = useState<FormType>(() => {
     if (typeof window !== "undefined") {
@@ -108,8 +77,8 @@ export default function PostPropertyPage() {
 
           return {
             ...parsed,
-            images: [], // reset invalid file data
-            video: null, // reset invalid file data
+            images: [],
+            video: null,
           };
         } catch {
           localStorage.removeItem("propertyForm");
@@ -136,7 +105,7 @@ export default function PostPropertyPage() {
       areaUnit: "sq.ft.",
       availableFrom: "",
       price: "",
-        pricePerSqft: "/sqft",
+      pricePerSqft: "",
       deposit: "",
       maintenance: "",
       description: "",
@@ -157,12 +126,7 @@ export default function PostPropertyPage() {
     localStorage.setItem("propertyStep", step.toString());
   }, [step]);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const next = () => {
-    // STEP 0 → BASIC DETAILS
     if (step === 0) {
       if (!form.category || !form.type || !form.purpose) {
         toast.error("Please fill all basic property details");
@@ -170,7 +134,6 @@ export default function PostPropertyPage() {
       }
     }
 
-    // STEP 1 → LOCATION
     if (step === 1) {
       if (!form.city || !form.locality) {
         toast.error("Please enter city and locality");
@@ -178,70 +141,64 @@ export default function PostPropertyPage() {
       }
     }
 
-    // STEP 2 → PROPERTY PROFILE
-    // STEP 2 → PROPERTY PROFILE
-// STEP 2 → PROPERTY PROFILE
-if (step === 2) {
-  if (form.purpose === "pg") {
-    // ✅ PG VALIDATION - with BHK, Area, Price per sqft
-    if (!form.bhk) {
-      toast.error("Please select room configuration");
-      return;
-    }
-    if (!form.area || Number(form.area) <= 0) {
-      toast.error("Please enter room size");
-      return;
-    }
-    if (!form.pricePerSqft || Number(form.pricePerSqft) <= 0) {
-      toast.error("Please enter price per sq.ft");
-      return;
-    }
-    if (!form.age) {
-      toast.error("Please select age of property");
-      return;
-    }
-    if (!form.tenant) {
-      toast.error("Please select tenant type");
-      return;
-    }
-    if (!form.price || Number(form.price) <= 0) {
-      toast.error("Please enter PG monthly rent");
-      return;
-    }
-    if (!form.broker) {
-      toast.error("Please select broker contact preference");
-      return;
-    }
-  } else {
-    // ✅ NORMAL PROPERTY VALIDATION (sell/rent)
-    if (
-      !form.bhk ||
-      !form.area ||
-      !form.pricePerSqft ||
-      !form.furnish ||
-      !form.age ||
-      !form.bed ||
-      !form.bath ||
-      !form.bal ||
-      !form.broker
-    ) {
-      toast.error("Please complete property profile");
-      return;
+    if (step === 2) {
+      if (form.purpose === "pg") {
+        if (!form.bhk) {
+          toast.error("Please select room configuration");
+          return;
+        }
+        if (!form.area || Number(form.area) <= 0) {
+          toast.error("Please enter room size");
+          return;
+        }
+        if (!form.pricePerSqft || Number(form.pricePerSqft) <= 0) {
+          toast.error("Please enter price per sq.ft");
+          return;
+        }
+        if (!form.age) {
+          toast.error("Please select age of property");
+          return;
+        }
+        if (!form.tenant) {
+          toast.error("Please select tenant type");
+          return;
+        }
+        if (!form.price || Number(form.price) <= 0) {
+          toast.error("Please enter PG monthly rent");
+          return;
+        }
+        if (!form.broker) {
+          toast.error("Please select broker contact preference");
+          return;
+        }
+      } else {
+        if (
+          !form.bhk ||
+          !form.area ||
+          !form.pricePerSqft ||
+          !form.furnish ||
+          !form.age ||
+          !form.bed ||
+          !form.bath ||
+          !form.bal ||
+          !form.broker
+        ) {
+          toast.error("Please complete property profile");
+          return;
+        }
+
+        if (form.purpose === "rent" && !form.tenant) {
+          toast.error("Please select tenant type");
+          return;
+        }
+
+        if (form.purpose === "rent" && !form.availableFrom) {
+          toast.error("Please select available date");
+          return;
+        }
+      }
     }
 
-    if (form.purpose === "rent" && !form.tenant) {
-      toast.error("Please select tenant type");
-      return;
-    }
-
-    if (form.purpose === "rent" && !form.availableFrom) {
-      toast.error("Please select available date");
-      return;
-    }
-  }
-}
-
-    // STEP 3 → PHOTOS
     if (step === 3) {
       if (form.images.length === 0) {
         toast.error("Please upload at least one property image");
@@ -272,7 +229,7 @@ if (step === 2) {
   };
 
   const performReset = () => {
-    const previousForm = form; // store safely
+    const previousForm = form;
 
     const defaultForm: FormType = {
       purpose: "rent",
@@ -293,7 +250,7 @@ if (step === 2) {
       areaUnit: "sq.ft.",
       availableFrom: "",
       price: "",
-      pricePerSqft: "/sqft", 
+      pricePerSqft: "",
       deposit: "",
       maintenance: "",
       description: "",
@@ -377,7 +334,7 @@ if (step === 2) {
       return;
     }
 
-    if (form.purpose !== "sell" && !form.maintenance) {
+    if (form.purpose !== "sell" && !form.maintenance && form.maintenanceType === "Included") {
       toast.error("Please add maintenance charges");
       return;
     }
@@ -457,10 +414,8 @@ if (step === 2) {
 
   if (!mounted) return null;
   return (
-    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-      {/* STEPS */}
-      <Card className="w-full lg:w-72 p-4 sm:p-6 lg:p-7 rounded-2xl overflow-x-auto">
-        {/* MOBILE HORIZONTAL */}
+    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto ">
+      <Card className="w-full lg:w-72 p-4 sm:p-6 lg:p-7 rounded-2xl overflow-x-auto border border-gray-400">
         <div className="flex lg:hidden gap-6 min-w-max">
           {steps.map((name, i) => {
             const completed = i < step;
@@ -492,9 +447,8 @@ if (step === 2) {
           })}
         </div>
 
-        {/* DESKTOP VERTICAL */}
         <div className="hidden lg:block relative">
-          <div className="absolute left-[14px] top-2 bottom-2 w-[2px] bg-gray-300" />
+          <div className="absolute left-[14px] top-2 bottom-2 w-[2px] bg-gray-300 " />
 
           {steps.map((name, i) => {
             const completed = i < step;
@@ -531,8 +485,7 @@ if (step === 2) {
         </div>
       </Card>
 
-      {/* RIGHT AREA */}
-      <Card className="flex-1 p-4 sm:p-6 lg:p-10">
+      <Card className="flex-1 p-4 sm:p-6 lg:p-10 border border-gray-400">
         {renderStep()}
 
         <div className="flex flex-wrap gap-4 mt-8 lg:mt-10">

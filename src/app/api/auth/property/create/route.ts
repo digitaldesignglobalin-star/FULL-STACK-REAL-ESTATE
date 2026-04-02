@@ -65,10 +65,10 @@ export async function POST(req: Request) {
     // });
 
     data.forEach((value, key) => {
-  if (key !== "images" && key !== "video") {
-    propertyData[key] = value.toString(); // 🔥 ALWAYS include
-  }
-});
+      if (key !== "images" && key !== "video") {
+        propertyData[key] = value.toString(); // 🔥 ALWAYS include
+      }
+    });
 
     // convert numeric fields AFTER the loop
     // ✅ FIX BHK PROPERLY

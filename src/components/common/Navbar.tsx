@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, X, Info, Headphones, FileText, Settings } from "lucide-react";
+import { Menu, X, Info, Headphones, FileText, Settings, Heart, LogOut } from "lucide-react";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 
 export default function Navbar() {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -18,36 +18,35 @@ export default function Navbar() {
           </div>
 
           <div className="hidden lg:flex items-center gap-6 text-[13px] font-semibold text-gray-300">
-            <span className="hover:text-white cursor-pointer transition">
+            <Link href="/dashboard" className="hover:text-white cursor-pointer transition">
               For Buyers
-            </span>
-            <span className="hover:text-white cursor-pointer transition">
+            </Link>
+            <Link href="/dashboard/property/for-rent" className="hover:text-white cursor-pointer transition">
               For Tenants
-            </span>
-            <span className="hover:text-white cursor-pointer transition">
-              For Owners
-            </span>
+            </Link>
+            <Link href="/dashboard/seller" className="hover:text-white cursor-pointer transition">
+              For Sellers
+            </Link>
             <span className="hover:text-white cursor-pointer transition">
               For Dealers / Builders
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <Link
-            href="/dashboard/post-property"
-            className="hidden sm:flex items-center gap-2 bg-white text-[#1a1a1a] px-4 py-1.5 rounded-md font-bold text-sm hover:bg-gray-100 transition cursor-pointer"
-          >
-            Post property{" "}
-            <span className="bg-green-600 text-white text-[10px] px-1 rounded ml-1">
-              FREE
-            </span>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/dashboard/post-property"
+              className="hidden sm:flex items-center gap-2 bg-white text-[#1a1a1a] px-4 py-1.5 rounded-md font-bold text-sm hover:bg-gray-100 transition cursor-pointer"
+            >
+              Post property{" "}
+              <span className="bg-green-600 text-white text-[10px] px-1 rounded ml-1">
+                FREE
+              </span>
+            </Link>
 
           <div className="h-6 w-[1px] bg-gray-700 mx-2 hidden md:block" />
 
           <button
-            onClick={() => setIsLoginModalOpen(true)}
             className="w-9 h-9 bg-green-200 text-green-800 rounded-full flex items-center justify-center font-bold text-xs cursor-pointer"
           >
             AB
@@ -85,15 +84,34 @@ export default function Navbar() {
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                 Navigation
               </p>
-              <span className="text-slate-800 font-semibold hover:text-blue-600 cursor-pointer">
+              <Link 
+                href="/dashboard/wishlist"
+                className="flex items-center gap-3 text-slate-800 font-semibold hover:text-blue-600 cursor-pointer"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Heart size={18} className="text-red-500" /> Wishlist
+              </Link>
+              <Link 
+                href="/dashboard"
+                className="text-slate-800 font-semibold hover:text-blue-600 cursor-pointer"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 For Buyers
-              </span>
-              <span className="text-slate-800 font-semibold hover:text-blue-600 cursor-pointer">
+              </Link>
+              <Link 
+                href="/dashboard/property/for-rent"
+                className="text-slate-800 font-semibold hover:text-blue-600 cursor-pointer"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 For Tenants
-              </span>
-              <span className="text-slate-800 font-semibold hover:text-blue-600 cursor-pointer">
-                For Owners
-              </span>
+              </Link>
+              <Link 
+                href="/dashboard/seller"
+                className="text-slate-800 font-semibold hover:text-blue-600 cursor-pointer"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                For Sellers
+              </Link>
               <span className="text-slate-800 font-semibold hover:text-blue-600 cursor-pointer">
                 For Dealers / Builders
               </span>
@@ -103,6 +121,13 @@ export default function Navbar() {
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                 General Info
               </p>
+              <Link 
+                href="/dashboard/wishlist"
+                className="flex items-center gap-3 text-slate-700 hover:text-blue-600 cursor-pointer font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Heart size={18} className="text-red-500" /> Wishlist
+              </Link>
               <div className="flex items-center gap-3 text-slate-700 hover:text-blue-600 cursor-pointer font-medium">
                 <Info size={18} /> About 99acres Clone
               </div>
@@ -116,45 +141,21 @@ export default function Navbar() {
                 <Settings size={18} /> Account Settings
               </div>
             </div>
+
+            <div className="mt-auto pt-6 border-t">
+              <button
+                onClick={() => signOut({ callbackUrl: "/welcome" })}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold bg-red-500/10 text-red-600 hover:bg-red-500/50 transition-colors cursor-pointer border border-red-700/50"
+              >
+                <LogOut size={16} />
+                <span>Logout</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* --- LOGIN MODAL --- */}
-      {isLoginModalOpen && (
-        <div
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-          onClick={() => setIsLoginModalOpen(false)}
-        >
-          <div
-            className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden p-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Access Portal</h2>
-              <X
-                className="cursor-pointer text-slate-400"
-                onClick={() => setIsLoginModalOpen(false)}
-              />
-            </div>
-            <div className="space-y-3">
-              <button className="w-full bg-[#005ca8] text-white py-4 rounded-xl font-bold">
-                Login as Existing User
-              </button>
-              <div className="grid grid-cols-2 gap-3">
-                {["Builder", "Broker", "User", "Admin"].map((r) => (
-                  <button
-                    key={r}
-                    className="p-3 border rounded-xl font-bold text-xs hover:bg-slate-50"
-                  >
-                    {r}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

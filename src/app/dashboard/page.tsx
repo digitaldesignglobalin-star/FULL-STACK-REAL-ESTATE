@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, RefObject } from "react";
+import React, { useState, useRef, RefObject, useEffect } from "react";
 import {
   Search,
   MapPin,
@@ -22,12 +22,13 @@ import {
   Settings,
   SlidersHorizontal,
   Check,
+  Loader2,
 } from "lucide-react";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import axios from "axios";
-import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // --- Types for TypeScript ---
 interface PropertyCardProps {
@@ -43,9 +44,62 @@ interface SectionProps {
 }
 
 export default function ProfessionalHome() {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchSuggestions, setSearchSuggestions] = useState<{
+    cities: string[];
+    localities: string[];
+    types: string[];
+  }>({ cities: [], localities: [], types: [] });
+  const [searchProperties, setSearchProperties] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSearch = (query?: string) => {
+    const searchTerm = query || searchQuery;
+    if (searchTerm.trim()) {
+      router.push(`/dashboard/property?q=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+    handleSearch(suggestion);
+  };
+
+  const handlePropertyClick = (propertyId: string) => {
+    setShowSuggestions(false);
+    router.push(`/dashboard/property_details/${propertyId}`);
+  };
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchQuery.trim().length < 1) {
+        setSearchSuggestions({ cities: [], localities: [], types: [] });
+        setSearchProperties([]);
+        return;
+      }
+
+      setSearchLoading(true);
+      try {
+        const res = await axios.get("/api/search", {
+          params: { q: searchQuery, limit: 10 },
+        });
+        setSearchSuggestions(res.data.suggestions || { cities: [], localities: [], types: [] });
+        setSearchProperties(res.data.properties || []);
+      } catch (err) {
+        console.error("Failed to fetch suggestions", err);
+      } finally {
+        setSearchLoading(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
 
   // --- Filter States for Reset Logic ---
   const [activePropertyType, setActivePropertyType] =
@@ -87,6 +141,7 @@ export default function ProfessionalHome() {
     }
   };
 
+  const featuredRef = useRef<HTMLDivElement>(null);
   const newProjectsRef = useRef<HTMLDivElement>(null);
   const newlyLaunchedRef = useRef<HTMLDivElement>(null);
   const underConstructionRef = useRef<HTMLDivElement>(null);
@@ -120,6 +175,8 @@ export default function ProfessionalHome() {
     .filter((p) => p.status === "under-construction")
     .slice(0, 6);
 
+  const featured = properties.filter((p) => p.featured === true).slice(0, 6);
+
   if (loading) {
     return (
       <div className="p-10 text-center text-lg font-semibold">
@@ -130,7 +187,7 @@ export default function ProfessionalHome() {
 
   // --- Property Card Component ---
   const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => (
-    <div className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group mb-2">
+    <Link href={`/dashboard/property_details/${property._id}`} className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group mb-2">
       <div className="relative h-40 sm:h-44 bg-gray-100">
         <img
           src={property.images?.[0] ?? "/noimage.png"}
@@ -159,17 +216,16 @@ export default function ProfessionalHome() {
         </p>
         <div className="flex gap-2">
           <button
-            onClick={() => setIsLoginModalOpen(true)}
             className="flex-1 flex items-center justify-center gap-1 sm:gap-2 border-2 border-[#005ca8] text-[#005ca8] py-2 rounded-lg font-bold hover:bg-[#005ca8] hover:text-white transition text-[11px] sm:text-sm cursor-pointer"
           >
             <Phone size={14} /> Contact
           </button>
-          <button className="flex-1 bg-slate-100 text-slate-700 py-2 rounded-lg font-bold hover:bg-slate-200 transition text-[11px] sm:text-sm cursor-pointer">
+          <span className="flex-1 bg-slate-100 text-slate-700 py-2 rounded-lg font-bold hover:bg-slate-200 transition text-[11px] sm:text-sm text-center">
             View Details
-          </button>
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 
   const PropertySection: React.FC<SectionProps> = ({
@@ -188,7 +244,7 @@ export default function ProfessionalHome() {
           <p className="text-sm text-slate-500">{subtitle}</p>
         </div>
         <Link
-          href={`/dashboard/properties/${status}`}
+          href={`/dashboard/property/${status}`}
           className="text-blue-600 font-bold text-sm flex items-center gap-1 hover:underline cursor-pointer"
         >
           View All <ArrowRight size={16} />
@@ -258,7 +314,7 @@ export default function ProfessionalHome() {
 
           <div className="h-6 w-[1px] bg-gray-700 mx-2 hidden md:block" />
 
-          <button onClick={() => setIsLoginModalOpen(true)} className="w-9 h-9 bg-green-200 text-green-800 rounded-full flex items-center justify-center font-bold text-xs">AB</button>
+          <button className="w-9 h-9 bg-green-200 text-green-800 rounded-full flex items-center justify-center font-bold text-xs">AB</button>
 
           <Menu className="text-white cursor-pointer md:ml-2" onClick={() => setIsMenuOpen(true)} />
 
@@ -337,15 +393,91 @@ export default function ProfessionalHome() {
 
           <div className="bg-white p-2 rounded-xl sm:rounded-2xl shadow-2xl max-w-4xl mx-auto relative overflow-visible">
             <div className="flex flex-col md:flex-row gap-1 sm:gap-2">
-              <div className="flex-[2] flex items-center px-4 py-3 border-b md:border-b-0 md:border-r border-gray-100 text-slate-800">
+              <div className="flex-[2] flex items-center px-4 py-3 border-b md:border-b-0 md:border-r border-gray-100 text-slate-800 relative">
                 <MapPin className="text-blue-600 mr-2 shrink-0" size={20} />
                 <input
+                  ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="Enter city, locality or project"
                   className="w-full outline-none text-slate-800 font-medium placeholder:text-slate-400 text-sm sm:text-base"
                 />
+                {searchLoading && (
+                  <Loader2 className="animate-spin text-blue-600 w-4 h-4" />
+                )}
+                {showSuggestions && (searchSuggestions.cities.length > 0 || searchSuggestions.localities.length > 0 || searchSuggestions.types.length > 0 || searchProperties.length > 0) && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                    {searchProperties.length > 0 && (
+                      <div className="p-2">
+                        <p className="text-xs font-bold text-slate-500 uppercase mb-1">Properties</p>
+                        {searchProperties.map((property) => (
+                          <button
+                            key={property._id}
+                            onClick={() => handlePropertyClick(property._id)}
+                            className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded flex items-center gap-2 cursor-pointer"
+                          >
+                            <img 
+                              src={property.images?.[0] || "/noimage.png"} 
+                              alt={property.type}
+                              className="w-10 h-10 rounded object-cover"
+                            />
+                            <div className="flex flex-col">
+                              <span className="font-medium">{property.type} {property.bhk ? `${property.bhk} BHK` : ""}</span>
+                              <span className="text-xs text-slate-500">{property.locality}, {property.city}</span>
+                              <span className="text-xs font-bold text-blue-600">₹{property.price?.toLocaleString()}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {searchSuggestions.cities.length > 0 && (
+                      <div className="p-2 border-t">
+                        <p className="text-xs font-bold text-slate-500 uppercase mb-1">Cities</p>
+                        {searchSuggestions.cities.map((city, i) => (
+                          <button
+                            key={`city-${i}`}
+                            onClick={() => handleSuggestionClick(city)}
+                            className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded flex items-center gap-2 cursor-pointer"
+                          >
+                            <MapPin size={14} className="text-blue-600" /> {city}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {searchSuggestions.localities.length > 0 && (
+                      <div className="p-2 border-t">
+                        <p className="text-xs font-bold text-slate-500 uppercase mb-1">Localities</p>
+                        {searchSuggestions.localities.map((loc, i) => (
+                          <button
+                            key={`loc-${i}`}
+                            onClick={() => handleSuggestionClick(loc)}
+                            className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded flex items-center gap-2 cursor-pointer"
+                          >
+                            <MapPin size={14} className="text-green-600" /> {loc}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {searchSuggestions.types.length > 0 && (
+                      <div className="p-2 border-t">
+                        <p className="text-xs font-bold text-slate-500 uppercase mb-1">Property Types</p>
+                        {searchSuggestions.types.map((type, i) => (
+                          <button
+                            key={`type-${i}`}
+                            onClick={() => handleSuggestionClick(type)}
+                            className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded flex items-center gap-2 cursor-pointer"
+                          >
+                            <Building2 size={14} className="text-purple-600" /> {type}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div
@@ -365,7 +497,10 @@ export default function ProfessionalHome() {
                 />
               </div>
 
-              <button className="bg-[#005ca8] text-white px-6 md:px-10 py-3 rounded-lg sm:rounded-xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer hover:bg-[#004b8a] shadow-lg text-sm sm:text-base">
+              <button 
+                onClick={() => handleSearch()}
+                className="bg-[#005ca8] text-white px-6 md:px-10 py-3 rounded-lg sm:rounded-xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer hover:bg-[#004b8a] shadow-lg text-sm sm:text-base"
+              >
                 <Search size={20} /> Search
               </button>
             </div>
@@ -555,6 +690,16 @@ export default function ProfessionalHome() {
 
       {/* --- CONTENT CATEGORIES (Always Visible) --- */}
       <div className="py-4 sm:py-8 bg-white relative z-10">
+        {featured.length > 0 && (
+          <PropertySection
+            title="Featured Properties"
+            subtitle="Handpicked premium listings"
+            scrollRef={featuredRef}
+            items={featured}
+            status="featured"
+          />
+        )}
+
         <PropertySection
           title="New Projects for You"
           subtitle="Curated listings for your dream home"
@@ -587,42 +732,6 @@ export default function ProfessionalHome() {
           status="under-construction"
         />
       </div>
-
-      {/* --- LOGIN MODAL --- */}
-      {isLoginModalOpen && (
-        <div
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-          onClick={() => setIsLoginModalOpen(false)}
-        >
-          <div
-            className="bg-white w-full max-w-sm sm:max-w-md rounded-2xl shadow-2xl overflow-hidden p-6 sm:p-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold">Access Portal</h2>
-              <X
-                className="cursor-pointer text-slate-400"
-                onClick={() => setIsLoginModalOpen(false)}
-              />
-            </div>
-            <div className="space-y-3">
-              <button className="w-full bg-[#005ca8] text-white py-3 sm:py-4 rounded-xl font-bold cursor-pointer text-sm sm:text-base">
-                Login as Existing User
-              </button>
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                {["Builder", "Broker", "User", "Admin"].map((r) => (
-                  <button
-                    key={r}
-                    className="p-2 sm:p-3 border rounded-xl font-bold text-[10px] sm:text-xs hover:bg-slate-50 cursor-pointer"
-                  >
-                    {r}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <Footer />
     </div>

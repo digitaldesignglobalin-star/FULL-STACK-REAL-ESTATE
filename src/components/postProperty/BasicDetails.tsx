@@ -48,25 +48,34 @@ export default function BasicDetails({ form, setForm }: BasicDetailsProps) {
 
       <div className="flex gap-3 mb-8">
         <Button
-          variant={form.purpose === "sell" ? "default" : "outline"}
           onClick={() => setForm({ ...form, purpose: "sell" })}
-          className="border border-gray-500 rounded-lg px-4 py-2"
+          className={`border border-gray-500 rounded-lg px-4 py-2 cursor-pointer ${
+            form.purpose === "sell"
+              ? "bg-[#155DFC] text-white border-[#155DFC] hover:bg-[#155DFC]"
+              : "bg-transparent text-gray-700 hover:bg-transparent"
+          }`}
         >
           Sell
         </Button>
 
         <Button
-          variant={form.purpose === "rent" ? "default" : "outline"}
           onClick={() => setForm({ ...form, purpose: "rent" })}
-          className="border border-gray-500 rounded-lg px-4 py-2"
+          className={`border border-gray-500 rounded-lg px-4 py-2 cursor-pointer ${
+            form.purpose === "rent"
+              ? "bg-[#155DFC] text-white border-[#155DFC] hover:bg-[#155DFC]"
+              : "bg-transparent text-gray-700 hover:bg-transparent"
+          }`}
         >
           Rent / Lease
         </Button>
 
         <Button
-          variant={form.purpose === "pg" ? "default" : "outline"}
           onClick={() => setForm({ ...form, purpose: "pg" })}
-          className="border border-gray-500 rounded-lg px-4 py-2"
+          className={`border border-gray-500 rounded-lg px-4 py-2 cursor-pointer ${
+            form.purpose === "pg"
+              ? "bg-[#155DFC] text-white border-[#155DFC] hover:bg-[#155DFC]"
+              : "bg-transparent text-gray-700 hover:bg-transparent"
+          }`}
         >
           PG
         </Button>
@@ -86,7 +95,11 @@ export default function BasicDetails({ form, setForm }: BasicDetailsProps) {
         {categoryOptions.map((item, index) => (
           <div
             key={item.value}
-            className="flex items-center gap-2 border border-gray-500 rounded-lg px-3 py-2 cursor-pointer"
+            className={`flex items-center gap-2 border border-gray-500 rounded-lg px-3 py-2 cursor-pointer ${
+              form.category === item.value
+                ? "bg-[#155DFC] text-white border-[#155DFC] hover:bg-[#155DFC]"
+                : "hover:bg-transparent"
+            }`}
           >
             <RadioGroupItem
               value={item.value}
@@ -104,9 +117,12 @@ export default function BasicDetails({ form, setForm }: BasicDetailsProps) {
         {propertyTypes.map((item) => (
           <Button
             key={item}
-            variant={form.type === item ? "default" : "outline"}
-            className="border border-gray-500 rounded-lg px-4 py-2"
             onClick={() => setForm({ ...form, type: item })}
+            className={`border border-gray-500 rounded-lg px-4 py-2 cursor-pointer ${
+              form.type === item
+                ? "bg-[#155DFC] text-white border-[#155DFC] hover:bg-[#155DFC]"
+                : "bg-transparent text-gray-700 hover:bg-transparent"
+            }`}
           >
             {item}
           </Button>

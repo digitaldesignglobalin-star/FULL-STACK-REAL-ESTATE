@@ -8,6 +8,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
 
   const status = searchParams.get("status");
+  const purpose = searchParams.get("purpose");
   const search = searchParams.get("search");
   const locality = searchParams.get("locality");
   const minPrice = searchParams.get("minPrice");
@@ -16,19 +17,38 @@ export async function GET(req: Request) {
   const minArea = searchParams.get("minArea");
   const type = searchParams.get("type");
   const postedBy = searchParams.get("postedBy");
+  const featured = searchParams.get("featured");
 
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "10");
   const skip = (page - 1) * limit;
 
-  const conditions: any[] = [];
+  // Build query based on filters
+  let query: any = {};
 
-  if (status) {
-    conditions.push({ status });
+  // If status=for-rent is passed, filter for rent/PG properties
+  if (status === "for-rent") {
+    query = { 
+      $or: [
+        { purpose: "rent" },
+        { purpose: "pg" },
+        { category: "pg" }
+      ],
+      status: { $ne: "pending" }
+    };
+  } else if (status) {
+    query.status = status;
   }
 
+  // Skip pending status filter if status is set (except for-rent which already handles it)
+  if (!status) {
+    query.status = { $ne: "pending" };
+  }
+
+  // Add search filter
   if (search) {
-    conditions.push({
+    query.$and = query.$and || [];
+    query.$and.push({
       $or: [
         { city: { $regex: search, $options: "i" } },
         { locality: { $regex: search, $options: "i" } },
@@ -37,44 +57,44 @@ export async function GET(req: Request) {
     });
   }
 
+  // Add other filters
   if (locality) {
-    conditions.push({
-      locality: { $regex: locality, $options: "i" },
-    });
+    query.locality = { $regex: locality, $options: "i" };
   }
 
   if (minPrice || maxPrice) {
-    const priceFilter: any = {};
-    if (minPrice) priceFilter.$gte = Number(minPrice);
-    if (maxPrice) priceFilter.$lte = Number(maxPrice);
-    conditions.push({ price: priceFilter });
+    query.price = {};
+    if (minPrice) query.price.$gte = Number(minPrice);
+    if (maxPrice) query.price.$lte = Number(maxPrice);
   }
 
   if (bhk) {
-    const parsed = Number(bhk);
-    if (!isNaN(parsed)) {
-      conditions.push({ bhk: parsed });
-    }
+    query.bhk = Number(bhk);
   }
 
   if (minArea) {
-    conditions.push({ area: { $gte: Number(minArea) } });
+    query.area = { $gte: Number(minArea) };
   }
 
   if (type) {
-    conditions.push({ type: { $regex: `^${type}$`, $options: "i" } });
+    query.type = { $regex: type, $options: "i" };
   }
 
   if (postedBy) {
-    conditions.push({ postedBy: { $regex: `^${postedBy}$`, $options: "i" } });
+    query.postedBy = postedBy;
   }
 
-  const query = conditions.length ? { $and: conditions } : {};
+  if (featured === "true") {
+    query.featured = true;
+  }
 
-  const [properties, total] = await Promise.all([
-    Property.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
-    Property.countDocuments(query),
-  ]);
+  const properties = await Property.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+
+  const total = await Property.countDocuments(query);
 
   return NextResponse.json({
     properties,

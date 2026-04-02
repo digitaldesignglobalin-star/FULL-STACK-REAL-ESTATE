@@ -12,7 +12,8 @@ export async function proxy(req: NextRequest) {
     "/api/auth",
     "/favicon.ico",
     "/_next",
-    "/admin" //remove it later after testing
+    "/admin/login", // Admin login page - accessible without authentication
+    "/welcome",
   ];
   if (publicRoutes.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
@@ -61,3 +62,9 @@ export async function proxy(req: NextRequest) {
 export const config = {
   matcher: "/((?!api|_next/static|_next/image|favicon.ico).*)",
 };
+
+
+
+
+// please show only rented or PG listed properties when click on "For Tenants"                  
+    

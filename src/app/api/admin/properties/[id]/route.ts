@@ -49,6 +49,7 @@ export async function PATCH(
       "bhk",
       "area",
       "furnish",
+      "featured",
     ];
     const updates: Record<string, unknown> = {};
 
