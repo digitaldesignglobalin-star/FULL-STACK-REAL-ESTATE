@@ -1,25 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function VerifyPhonePage() {
+function VerifyPhoneContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const mobile = searchParams.get("mobile") || "";
 
-  const [otp, setOtp] = useState<string[]>(["","","","","",""]);
+  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
 
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
 
-  // countdown timer
   useEffect(() => {
     if (timeLeft <= 0) return;
 
@@ -30,16 +29,13 @@ export default function VerifyPhonePage() {
     return () => clearTimeout(timer);
   }, [timeLeft]);
 
-  useEffect(()=>{
-  if(!mobile){
-    toast.error("Invalid session");
-    router.push("/auth/register");
-  }
-},[mobile,router]);
+  useEffect(() => {
+    if (!mobile) {
+      toast.error("Invalid session");
+      router.push("/auth/register");
+    }
+  }, [mobile, router]);
 
-
-
-  // handle OTP input
   const handleChange = (value: string, index: number) => {
     if (!/^\d?$/.test(value)) return;
 
@@ -56,11 +52,8 @@ export default function VerifyPhonePage() {
     }
   };
 
-
-
-  // submit OTP
   const handleVerify = async () => {
-    const code = otp.join("");
+    const code = otp.join("").trim();
 
     if (code.length !== 6) {
       toast.error("Enter complete OTP");
@@ -70,21 +63,28 @@ export default function VerifyPhonePage() {
     setLoading(true);
 
     try {
-      await axios.post("/api/auth/verify-phone", {
+      const res = await axios.post("/api/auth/verify-phone", {
         mobile,
         otp: code,
       });
 
-      toast.success("Account created successfully");
-
-      router.push("/auth/login");
+      if (res.data.success) {
+        toast.success(res.data.message || "Account created successfully!");
+        setTimeout(() => {
+          router.push("/auth/login");
+        }, 1500);
+      }
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Verification failed");
+      if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
+      } else if (err.message) {
+        toast.error(err.message);
+      } else {
+        toast.error("Verification failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
-
-    // setLoading(false);
   };
 
   return (
@@ -99,7 +99,6 @@ export default function VerifyPhonePage() {
 
           <p className="text-center font-semibold mt-1">{mobile}</p>
 
-          {/* OTP boxes */}
           <div className="flex justify-center gap-3 mt-6">
             {otp.map((digit, i) => (
               <Input
@@ -118,6 +117,11 @@ export default function VerifyPhonePage() {
                 value={digit}
                 maxLength={1}
                 onChange={(e) => handleChange(e.target.value, i)}
+                onKeyDown={(e) => {
+                  if (e.key === "Backspace" && !otp[i] && i > 0) {
+                    document.getElementById(`otp-${i - 1}`)?.focus();
+                  }
+                }}
                 className="w-12 h-12 text-center text-lg border border-[#808080a1]"
               />
             ))}
@@ -125,14 +129,12 @@ export default function VerifyPhonePage() {
 
           <Button
             className="w-full mt-6"
-            // disabled={loading}
             disabled={loading || otp.join("").length !== 6}
             onClick={handleVerify}
           >
             {loading ? "Verifying..." : "Verify Account"}
           </Button>
 
-          {/* resend */}
           <p className="text-center text-sm text-gray-500 mt-4">
             {timeLeft > 0 ? (
               <>Resend OTP in {timeLeft}s</>
@@ -156,5 +158,29 @@ export default function VerifyPhonePage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function VerifyPhonePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <Card className="w-[420px] shadow-xl rounded-2xl border border-[#80808087]">
+          <CardContent className="p-8">
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-gray-200 rounded mx-auto w-48"></div>
+              <div className="h-4 bg-gray-200 rounded mx-auto w-64"></div>
+              <div className="flex justify-center gap-3 mt-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="w-12 h-12 bg-gray-200 rounded"></div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <VerifyPhoneContent />
+    </Suspense>
   );
 }

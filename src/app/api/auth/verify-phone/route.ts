@@ -2,19 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Otp from "@/models/otp.model";
 import User from "@/models/user.model";
-import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
   try {
-
     await connectDB();
 
     const { mobile, otp } = await req.json();
 
-    // validate input
     if (!mobile || !otp) {
       return NextResponse.json(
-        { message: "Missing data" },
+        { message: "Mobile and OTP are required" },
         { status: 400 }
       );
     }
@@ -23,79 +20,67 @@ export async function POST(req: NextRequest) {
 
     if (!tempUser) {
       return NextResponse.json(
-        { message: "OTP request not found" },
+        { message: "No OTP found. Please register again." },
         { status: 400 }
       );
     }
 
-    // 🔥 attempt limit MUST be here
     if (tempUser.attempts >= 5) {
       await Otp.deleteOne({ mobile });
       return NextResponse.json(
-        { message: "Too many attempts. Request new OTP." },
+        { message: "Too many attempts. Please request new OTP." },
         { status: 400 }
       );
     }
 
-    // expiry check
     if (tempUser.expiresAt < new Date()) {
       await Otp.deleteOne({ mobile });
       return NextResponse.json(
-        { message: "OTP expired" },
+        { message: "OTP has expired. Please request new OTP." },
         { status: 400 }
       );
     }
 
-    // compare OTP
-    const isMatch = await bcrypt.compare(otp, tempUser.otp);
-
-    if (!isMatch) {
-
+    if (otp.trim() !== tempUser.otp.trim()) {
       tempUser.attempts += 1;
       await tempUser.save();
 
       return NextResponse.json(
-        { message: "Invalid OTP" },
+        { message: "Invalid OTP. Please try again." },
         { status: 400 }
       );
     }
 
-    // prevent duplicate user
-    const exists = await User.findOne({ mobile });
+    const exists = await User.findOne({ email: tempUser.email });
 
     if (exists) {
+      await Otp.deleteOne({ mobile });
       return NextResponse.json(
-        { message: "User already exists" },
+        { message: "User already exists. Please login." },
         { status: 400 }
       );
     }
 
-    // create user
     await User.create({
       name: tempUser.name,
       email: tempUser.email,
       password: tempUser.password,
       mobile: tempUser.mobile,
       role: tempUser.role || "user",
+      subRole: tempUser.subRole,
     });
 
-    // delete OTP
     await Otp.deleteOne({ mobile });
 
     return NextResponse.json({
       success: true,
-      message: "Phone verified & user created",
+      message: "Account created successfully!",
     });
 
   } catch (err) {
-
-    console.log(err);
-
     return NextResponse.json(
       { message: "Verification failed" },
       { status: 500 }
     );
-
   }
 }
-

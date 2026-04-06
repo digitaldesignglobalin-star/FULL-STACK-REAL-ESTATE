@@ -8,8 +8,8 @@ const otpSchema = new mongoose.Schema({
   },
   password: String,
   mobile: {
-    // ✅ ADD THIS
     type: String,
+    index: true,
   },
   otp: {
     type: String,
@@ -21,8 +21,12 @@ const otpSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "builder", "employee", "admin"],
+    enum: ["user", "builder", "dealer", "employee", "admin"],
     default: "user",
+  },
+  subRole: {
+    type: String,
+    enum: ["builder", "dealer"],
   },
   expiresAt: {
     type: Date,

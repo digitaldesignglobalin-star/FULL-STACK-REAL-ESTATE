@@ -10,6 +10,7 @@ export async function GET() {
     const [
       totalUsers,
       totalBuilders,
+      totalDealers,
       totalProperties,
       pendingProperties,
       activeProperties,
@@ -17,6 +18,7 @@ export async function GET() {
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ role: "builder" }),
+      User.countDocuments({ role: "dealer" }),
       Property.countDocuments(),
       Property.countDocuments({ status: "pending" }),
       Property.countDocuments({ status: { $in: ["new", "launched", "ready"] } }),
@@ -96,7 +98,7 @@ export async function GET() {
       ]);
 
       const roleData: Record<string, string | number> = { day: startOfDay.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) };
-      ["user", "builder", "employee", "admin"].forEach((role) => {
+      ["user", "builder", "dealer", "employee", "admin"].forEach((role) => {
         const found = roleStats.find((r) => r._id === role);
         roleData[role] = found ? found.count : 0;
       });
@@ -118,6 +120,7 @@ export async function GET() {
       stats: {
         totalUsers,
         totalBuilders,
+        totalDealers,
         totalProperties,
         pendingProperties,
         activeProperties,

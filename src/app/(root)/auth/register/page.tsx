@@ -4,7 +4,7 @@ import { useState, FormEvent, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -20,6 +20,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState<string>("");
 
   const [role, setRole] = useState("user");
+  const [subRole, setSubRole] = useState("");
 
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -54,29 +55,33 @@ export default function RegisterPage() {
 
     setLoading(true);
 
-    const toastId = toast.loading("Sending OTP...");
-
     try {
-      const res = await axios.post("/api/auth/register", {
+      await axios.post("/api/auth/register", {
         name,
         email,
         mobile,
         password,
         role,
+        subRole: role === "builder" || role === "dealer" ? subRole : undefined,
       });
 
-      toast.success("OTP sent to your email", { id: toastId });
+      toast.success("OTP sent to your mobile!");
 
       router.push(`/auth/verify-phone?mobile=${mobile}`);
-
-      console.log(res.data);
-    } catch (error) {
-      console.error(error);
-
-      // alert("Server error");
-      toast.error("Something went wrong. Please try again.", { id: toastId });
-    } finally {
+    } catch (error: any) {
       setLoading(false);
+      
+      if (error.response?.data?.type === "mobile") {
+        toast.error("User already exists with this mobile number!");
+      } else if (error.response?.data?.type === "email") {
+        toast.error("User already registered with this email!");
+      } else if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else if (error.request) {
+        toast.error("Network error. Please try again.");
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
     }
   };
 
@@ -195,12 +200,25 @@ export default function RegisterPage() {
 
           <select
             value={role}
-            onChange={(e) => setRole(e.target.value)}
+            onChange={(e) => { setRole(e.target.value); setSubRole(""); }}
             className="w-full px-4 py-3 border border-[#80808073] rounded-lg"
           >
-            <option value="user">I am Buyer/User</option>
-            <option value="builder">I am Builder / Dealer</option>
+            <option value="user">I am User</option>
+            <option value="builder">I am Builder</option>
+            <option value="dealer">I am Dealer</option>
           </select>
+
+          {(role === "builder" || role === "dealer") && (
+            <select
+              value={subRole}
+              onChange={(e) => setSubRole(e.target.value)}
+              className="w-full px-4 py-3 border border-[#80808073] rounded-lg"
+              required
+            >
+              <option value="">Select {role}</option>
+              <option value={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</option>
+            </select>
+          )}
 
           <button
             type="submit"

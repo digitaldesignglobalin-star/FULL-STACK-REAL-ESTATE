@@ -83,7 +83,7 @@ export default function SellerDashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [editForm, setEditForm] = useState({
@@ -179,8 +179,8 @@ export default function SellerDashboard() {
   }
 
   const pendingProperties = properties.filter((p) => p.status === "pending");
-  const approvedProperties = properties.filter(
-    (p) => ["new", "launched", "ready", "under-construction"].includes(p.status)
+  const approvedProperties = properties.filter((p) =>
+    ["new", "launched", "ready", "under-construction"].includes(p.status),
   );
 
   const formatPrice = (price?: number) => {
@@ -229,13 +229,13 @@ export default function SellerDashboard() {
       images: [],
       existingImages: property.images || [],
     });
-    setEditImageInputKey(prev => prev + 1);
+    setEditImageInputKey((prev) => prev + 1);
     setEditDialogOpen(true);
   };
 
   const handleEditSubmit = async () => {
     if (!editingProperty) return;
-    
+
     try {
       setEditLoading(true);
 
@@ -255,7 +255,8 @@ export default function SellerDashboard() {
         if (editForm.area) fd.append("area", editForm.area);
         fd.append("areaUnit", editForm.areaUnit);
         if (editForm.price) fd.append("price", editForm.price);
-        if (editForm.pricePerSqft) fd.append("pricePerSqft", editForm.pricePerSqft);
+        if (editForm.pricePerSqft)
+          fd.append("pricePerSqft", editForm.pricePerSqft);
         fd.append("deposit", editForm.deposit);
         fd.append("maintenance", editForm.maintenance);
         fd.append("maintenanceType", editForm.maintenanceType);
@@ -268,7 +269,7 @@ export default function SellerDashboard() {
         fd.append("availableFrom", editForm.availableFrom);
         fd.append("description", editForm.description);
         fd.append("existingImages", JSON.stringify(editForm.existingImages));
-        
+
         editForm.images.forEach((file) => {
           fd.append("images", file);
         });
@@ -290,7 +291,9 @@ export default function SellerDashboard() {
           area: editForm.area ? Number(editForm.area) : undefined,
           areaUnit: editForm.areaUnit,
           price: editForm.price ? Number(editForm.price) : undefined,
-          pricePerSqft: editForm.pricePerSqft ? Number(editForm.pricePerSqft) : undefined,
+          pricePerSqft: editForm.pricePerSqft
+            ? Number(editForm.pricePerSqft)
+            : undefined,
           deposit: editForm.deposit,
           maintenance: editForm.maintenance,
           maintenanceType: editForm.maintenanceType,
@@ -305,7 +308,7 @@ export default function SellerDashboard() {
           existingImages: editForm.existingImages,
         });
       }
-      
+
       toast.success("Property updated successfully");
       setEditDialogOpen(false);
       fetchSellerProperties();
@@ -325,7 +328,7 @@ export default function SellerDashboard() {
       ...prev,
       images: [...prev.images, ...newFiles],
     }));
-    setEditImageInputKey(prev => prev + 1);
+    setEditImageInputKey((prev) => prev + 1);
   };
 
   const handleEditRemoveNewImage = (index: number) => {
@@ -343,9 +346,17 @@ export default function SellerDashboard() {
   };
 
   const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: <LayoutDashboard size={18} />,
+    },
     { id: "listings", label: "My Listings", icon: <Building2 size={18} /> },
-    { id: "add-property", label: "Post Property", icon: <PlusCircle size={18} /> },
+    {
+      id: "add-property",
+      label: "Post Property",
+      icon: <PlusCircle size={18} />,
+    },
     { id: "inquiries", label: "Inquiries", icon: <MessageSquare size={18} /> },
     { id: "profile", label: "My Profile", icon: <User size={18} /> },
   ];
@@ -448,7 +459,10 @@ export default function SellerDashboard() {
 
           <div className="flex items-center gap-3">
             <Link href="/dashboard/post-property">
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
+              <Button
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+              >
                 <PlusCircle size={16} className="mr-1" />
                 Post Property
               </Button>
@@ -523,7 +537,9 @@ export default function SellerDashboard() {
                         <p className="text-xs text-slate-500 font-semibold uppercase">
                           Total Views
                         </p>
-                        <p className="text-2xl font-bold text-purple-400 mt-1">0</p>
+                        <p className="text-2xl font-bold text-purple-400 mt-1">
+                          0
+                        </p>
                       </div>
                       <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
                         <Eye className="text-purple-400" size={24} />
@@ -549,12 +565,20 @@ export default function SellerDashboard() {
                 <CardContent>
                   {loading ? (
                     <div className="flex items-center justify-center h-32">
-                      <Loader2 className="animate-spin text-blue-500" size={24} />
+                      <Loader2
+                        className="animate-spin text-blue-500"
+                        size={24}
+                      />
                     </div>
                   ) : properties.length === 0 ? (
                     <div className="text-center py-8">
-                      <Building2 className="mx-auto text-slate-600 mb-2" size={40} />
-                      <p className="text-slate-400 text-sm">No properties yet</p>
+                      <Building2
+                        className="mx-auto text-slate-600 mb-2"
+                        size={40}
+                      />
+                      <p className="text-slate-400 text-sm">
+                        No properties yet
+                      </p>
                       <Link href="/dashboard/post-property">
                         <Button className="mt-3 bg-blue-600 hover:bg-blue-700 cursor-pointer">
                           Post Your First Property
@@ -576,12 +600,16 @@ export default function SellerDashboard() {
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <Building2 className="m-3 text-slate-500" size={20} />
+                              <Building2
+                                className="m-3 text-slate-500"
+                                size={20}
+                              />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-white truncate">
-                              {property.type || "Property"} {property.bhk ? `• ${property.bhk} BHK` : ""}
+                              {property.type || "Property"}{" "}
+                              {property.bhk ? `• ${property.bhk} BHK` : ""}
                             </p>
                             <p className="text-xs text-slate-400 truncate">
                               {property.locality}, {property.city}
@@ -616,8 +644,12 @@ export default function SellerDashboard() {
                         <PlusCircle className="text-blue-400" size={20} />
                       </div>
                       <div>
-                        <p className="font-semibold text-white">Add New Property</p>
-                        <p className="text-xs text-slate-500">List a new property</p>
+                        <p className="font-semibold text-white">
+                          Add New Property
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          List a new property
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -633,8 +665,12 @@ export default function SellerDashboard() {
                         <Building2 className="text-green-400" size={20} />
                       </div>
                       <div>
-                        <p className="font-semibold text-white">Manage Listings</p>
-                        <p className="text-xs text-slate-500">Edit or delete properties</p>
+                        <p className="font-semibold text-white">
+                          Manage Listings
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Edit or delete properties
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -650,8 +686,12 @@ export default function SellerDashboard() {
                         <User className="text-purple-400" size={20} />
                       </div>
                       <div>
-                        <p className="font-semibold text-white">Update Profile</p>
-                        <p className="text-xs text-slate-500">Manage your account</p>
+                        <p className="font-semibold text-white">
+                          Update Profile
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Manage your account
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -680,11 +720,14 @@ export default function SellerDashboard() {
                 Post a New Property
               </h3>
               <p className="text-slate-400 mb-6 max-w-md mx-auto">
-                Use our multi-step form to list your property. All listings require
-                admin approval before going live.
+                Use our multi-step form to list your property. All listings
+                require admin approval before going live.
               </p>
               <Link href="/dashboard/post-property">
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
+                <Button
+                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                >
                   <PlusCircle size={18} className="mr-2" />
                   Post Property
                 </Button>
@@ -702,7 +745,8 @@ export default function SellerDashboard() {
                   </CardTitle>
                   {inquiries.length > 0 && (
                     <Badge className="bg-blue-600 text-white">
-                      {inquiries.length} {inquiries.length === 1 ? 'inquiry' : 'inquiries'}
+                      {inquiries.length}{" "}
+                      {inquiries.length === 1 ? "inquiry" : "inquiries"}
                     </Badge>
                   )}
                 </div>
@@ -710,12 +754,18 @@ export default function SellerDashboard() {
               <CardContent>
                 {inquiriesLoading ? (
                   <div className="text-center py-12">
-                    <Loader2 className="mx-auto animate-spin text-slate-600 mb-4" size={40} />
+                    <Loader2
+                      className="mx-auto animate-spin text-slate-600 mb-4"
+                      size={40}
+                    />
                     <p className="text-slate-400">Loading inquiries...</p>
                   </div>
                 ) : inquiries.length === 0 ? (
                   <div className="text-center py-12">
-                    <MessageSquare className="mx-auto text-slate-600 mb-4" size={40} />
+                    <MessageSquare
+                      className="mx-auto text-slate-600 mb-4"
+                      size={40}
+                    />
                     <p className="text-slate-400">No inquiries yet</p>
                     <p className="text-xs text-slate-500 mt-1">
                       Inquiries will appear here when buyers contact you
@@ -724,13 +774,22 @@ export default function SellerDashboard() {
                 ) : (
                   <div className="space-y-4">
                     {inquiries.map((inquiry, index) => (
-                      <div key={index} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
+                      <div
+                        key={index}
+                        className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50"
+                      >
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <p className="font-semibold text-white">{inquiry.name}</p>
-                            <p className="text-sm text-slate-400">{inquiry.email}</p>
+                            <p className="font-semibold text-white">
+                              {inquiry.name}
+                            </p>
+                            <p className="text-sm text-slate-400">
+                              {inquiry.email}
+                            </p>
                             {inquiry.phone && (
-                              <p className="text-sm text-slate-400">{inquiry.phone}</p>
+                              <p className="text-sm text-slate-400">
+                                {inquiry.phone}
+                              </p>
                             )}
                           </div>
                           <span className="text-xs text-slate-500">
@@ -738,17 +797,20 @@ export default function SellerDashboard() {
                           </span>
                         </div>
                         <div className="mt-3 pt-3 border-t border-slate-700/50">
-                          <p className="text-xs text-slate-500 mb-1">Interested in:</p>
+                          <p className="text-xs text-slate-500 mb-1">
+                            Interested in:
+                          </p>
                           <p className="text-sm font-medium text-white">
-                            {inquiry.propertyType} in {inquiry.propertyLocality}, {inquiry.propertyCity}
+                            {inquiry.propertyType} in {inquiry.propertyLocality}
+                            , {inquiry.propertyCity}
                             {inquiry.propertyPrice && (
                               <span className="text-blue-400 ml-2">
-                                ₹{inquiry.propertyPrice >= 10000000 
+                                ₹
+                                {inquiry.propertyPrice >= 10000000
                                   ? `${(inquiry.propertyPrice / 10000000).toFixed(2)} Cr`
-                                  : inquiry.propertyPrice >= 100000 
+                                  : inquiry.propertyPrice >= 100000
                                     ? `${(inquiry.propertyPrice / 100000).toFixed(2)} L`
-                                    : inquiry.propertyPrice.toLocaleString()
-                                }
+                                    : inquiry.propertyPrice.toLocaleString()}
                               </span>
                             )}
                           </p>
@@ -768,9 +830,7 @@ export default function SellerDashboard() {
           )}
 
           {/* PROFILE VIEW */}
-          {activeTab === "profile" && (
-            <SellerProfile session={session} />
-          )}
+          {activeTab === "profile" && <SellerProfile session={session} />}
         </div>
 
         {/* EDIT PROPERTY DIALOG */}
@@ -780,7 +840,6 @@ export default function SellerDashboard() {
               <DialogTitle>Edit Property</DialogTitle>
             </DialogHeader>
             <div className="space-y-6 py-4">
-              
               {/* Purpose */}
               <div>
                 <label className="text-sm text-slate-300 font-medium block mb-2">
@@ -798,7 +857,11 @@ export default function SellerDashboard() {
                           : "bg-slate-800 border-slate-600 text-slate-300"
                       }`}
                     >
-                      {p === "pg" ? "PG" : p === "rent" ? "Rent / Lease" : "Sell"}
+                      {p === "pg"
+                        ? "PG"
+                        : p === "rent"
+                          ? "Rent / Lease"
+                          : "Sell"}
                     </button>
                   ))}
                 </div>
@@ -807,27 +870,34 @@ export default function SellerDashboard() {
               {/* Category */}
               <div>
                 <label className="text-sm text-slate-300 font-medium block mb-2">
-                  {editForm.purpose === "pg" ? "Who is this PG for?" : "Property Category"}
+                  {editForm.purpose === "pg"
+                    ? "Who is this PG for?"
+                    : "Property Category"}
                 </label>
                 <div className="flex gap-2">
-                  {(editForm.purpose === "pg" 
-                    ? ["boys", "girls"] 
+                  {(editForm.purpose === "pg"
+                    ? ["boys", "girls"]
                     : ["residential", "commercial"]
                   ).map((cat) => (
                     <button
                       key={cat}
                       type="button"
-                      onClick={() => setEditForm({ ...editForm, category: cat })}
+                      onClick={() =>
+                        setEditForm({ ...editForm, category: cat })
+                      }
                       className={`px-4 py-2 rounded-lg border text-sm ${
                         editForm.category === cat
                           ? "bg-blue-600 text-white border-blue-600"
                           : "bg-slate-800 border-slate-600 text-slate-300"
                       }`}
                     >
-                      {editForm.purpose === "pg" 
-                        ? (cat === "boys" ? "Boys PG" : "Girls PG")
-                        : (cat === "residential" ? "Residential" : "Commercial")
-                      }
+                      {editForm.purpose === "pg"
+                        ? cat === "boys"
+                          ? "Boys PG"
+                          : "Girls PG"
+                        : cat === "residential"
+                          ? "Residential"
+                          : "Commercial"}
                     </button>
                   ))}
                 </div>
@@ -840,7 +910,9 @@ export default function SellerDashboard() {
                 </label>
                 <select
                   value={editForm.type}
-                  onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, type: e.target.value })
+                  }
                   className="w-full bg-slate-800 border-slate-600 text-white rounded-lg px-3 py-2"
                 >
                   <option value="">Select Type</option>
@@ -854,11 +926,19 @@ export default function SellerDashboard() {
                   ) : (
                     <>
                       <option value="Flat/Apartment">Flat/Apartment</option>
-                      <option value="Independent House / Villa">Independent House / Villa</option>
-                      <option value="Independent / Builder Floor">Independent / Builder Floor</option>
+                      <option value="Independent House / Villa">
+                        Independent House / Villa
+                      </option>
+                      <option value="Independent / Builder Floor">
+                        Independent / Builder Floor
+                      </option>
                       <option value="Plot / Land">Plot / Land</option>
-                      <option value="1 RK / Studio Apartment">1 RK / Studio Apartment</option>
-                      <option value="Serviced apartment">Serviced apartment</option>
+                      <option value="1 RK / Studio Apartment">
+                        1 RK / Studio Apartment
+                      </option>
+                      <option value="Serviced apartment">
+                        Serviced apartment
+                      </option>
                       <option value="Farmhouse">Farmhouse</option>
                       <option value="Other">Other</option>
                     </>
@@ -869,19 +949,27 @@ export default function SellerDashboard() {
               {/* Location */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-slate-300 font-medium block mb-2">City</label>
+                  <label className="text-sm text-slate-300 font-medium block mb-2">
+                    City
+                  </label>
                   <Input
                     value={editForm.city}
-                    onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, city: e.target.value })
+                    }
                     className="bg-slate-800 border-slate-600 text-white"
                     placeholder="City"
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-slate-300 font-medium block mb-2">Locality</label>
+                  <label className="text-sm text-slate-300 font-medium block mb-2">
+                    Locality
+                  </label>
                   <Input
                     value={editForm.locality}
-                    onChange={(e) => setEditForm({ ...editForm, locality: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, locality: e.target.value })
+                    }
                     className="bg-slate-800 border-slate-600 text-white"
                     placeholder="Locality / Society"
                   />
@@ -891,16 +979,22 @@ export default function SellerDashboard() {
               {/* Construction Status */}
               {(editForm.purpose === "sell" || editForm.purpose === "rent") && (
                 <div>
-                  <label className="text-sm text-slate-300 font-medium block mb-2">Construction Status</label>
+                  <label className="text-sm text-slate-300 font-medium block mb-2">
+                    Construction Status
+                  </label>
                   <select
                     value={editForm.status}
-                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, status: e.target.value })
+                    }
                     className="w-full bg-slate-800 border-slate-600 text-white rounded-lg px-3 py-2"
                   >
                     <option value="new">New Project</option>
                     <option value="launched">Newly Launched</option>
                     <option value="ready">Ready to Move</option>
-                    <option value="under-construction">Under Construction</option>
+                    <option value="under-construction">
+                      Under Construction
+                    </option>
                   </select>
                 </div>
               )}
@@ -908,28 +1002,38 @@ export default function SellerDashboard() {
               {/* BHK, Area, Price Per Sqft */}
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="text-sm text-slate-300 font-medium block mb-2">BHK</label>
+                  <label className="text-sm text-slate-300 font-medium block mb-2">
+                    BHK
+                  </label>
                   <Input
                     value={editForm.bhk}
-                    onChange={(e) => setEditForm({ ...editForm, bhk: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, bhk: e.target.value })
+                    }
                     className="bg-slate-800 border-slate-600 text-white"
                     placeholder="BHK"
                     type="number"
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-slate-300 font-medium block mb-2">Area</label>
+                  <label className="text-sm text-slate-300 font-medium block mb-2">
+                    Area
+                  </label>
                   <div className="flex gap-2">
                     <Input
                       value={editForm.area}
-                      onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, area: e.target.value })
+                      }
                       className="bg-slate-800 border-slate-600 text-white flex-1"
                       placeholder="Area"
                       type="number"
                     />
                     <select
                       value={editForm.areaUnit}
-                      onChange={(e) => setEditForm({ ...editForm, areaUnit: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, areaUnit: e.target.value })
+                      }
                       className="bg-slate-800 border-slate-600 text-white rounded-lg px-2"
                     >
                       <option value="sq.ft.">sq.ft.</option>
@@ -938,10 +1042,14 @@ export default function SellerDashboard() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm text-slate-300 font-medium block mb-2">Price/sq.ft</label>
+                  <label className="text-sm text-slate-300 font-medium block mb-2">
+                    Price/sq.ft
+                  </label>
                   <Input
                     value={editForm.pricePerSqft}
-                    onChange={(e) => setEditForm({ ...editForm, pricePerSqft: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, pricePerSqft: e.target.value })
+                    }
                     className="bg-slate-800 border-slate-600 text-white"
                     placeholder="Price per sq.ft"
                     type="number"
@@ -953,41 +1061,59 @@ export default function SellerDashboard() {
               {(editForm.purpose === "sell" || editForm.purpose === "rent") && (
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="text-sm text-slate-300 font-medium block mb-2">Bedrooms</label>
+                    <label className="text-sm text-slate-300 font-medium block mb-2">
+                      Bedrooms
+                    </label>
                     <select
                       value={editForm.bed}
-                      onChange={(e) => setEditForm({ ...editForm, bed: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, bed: e.target.value })
+                      }
                       className="w-full bg-slate-800 border-slate-600 text-white rounded-lg px-3 py-2"
                     >
                       <option value="">Select</option>
                       {["1", "2", "3", "4", "5", "More"].map((b) => (
-                        <option key={b} value={b}>{b}</option>
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="text-sm text-slate-300 font-medium block mb-2">Bathrooms</label>
+                    <label className="text-sm text-slate-300 font-medium block mb-2">
+                      Bathrooms
+                    </label>
                     <select
                       value={editForm.bath}
-                      onChange={(e) => setEditForm({ ...editForm, bath: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, bath: e.target.value })
+                      }
                       className="w-full bg-slate-800 border-slate-600 text-white rounded-lg px-3 py-2"
                     >
                       <option value="">Select</option>
                       {["1", "2", "3", "4", "5", "More"].map((b) => (
-                        <option key={b} value={b}>{b}</option>
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="text-sm text-slate-300 font-medium block mb-2">Balconies</label>
+                    <label className="text-sm text-slate-300 font-medium block mb-2">
+                      Balconies
+                    </label>
                     <select
                       value={editForm.bal}
-                      onChange={(e) => setEditForm({ ...editForm, bal: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, bal: e.target.value })
+                      }
                       className="w-full bg-slate-800 border-slate-600 text-white rounded-lg px-3 py-2"
                     >
                       <option value="">Select</option>
                       {["0", "1", "2", "3", "4"].map((b) => (
-                        <option key={b} value={b}>{b}</option>
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -997,55 +1123,72 @@ export default function SellerDashboard() {
               {/* Furnishing */}
               {(editForm.purpose === "sell" || editForm.purpose === "rent") && (
                 <div>
-                  <label className="text-sm text-slate-300 font-medium block mb-2">Furnishing</label>
+                  <label className="text-sm text-slate-300 font-medium block mb-2">
+                    Furnishing
+                  </label>
                   <div className="flex gap-2">
-                    {["Furnished", "Semi-furnished", "Un-furnished"].map((f) => (
-                      <button
-                        key={f}
-                        type="button"
-                        onClick={() => setEditForm({ ...editForm, furnish: f })}
-                        className={`px-4 py-2 rounded-lg border text-sm ${
-                          editForm.furnish === f
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-slate-800 border-slate-600 text-slate-300"
-                        }`}
-                      >
-                        {f}
-                      </button>
-                    ))}
+                    {["Furnished", "Semi-furnished", "Un-furnished"].map(
+                      (f) => (
+                        <button
+                          key={f}
+                          type="button"
+                          onClick={() =>
+                            setEditForm({ ...editForm, furnish: f })
+                          }
+                          className={`px-4 py-2 rounded-lg border text-sm ${
+                            editForm.furnish === f
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-slate-800 border-slate-600 text-slate-300"
+                          }`}
+                        >
+                          {f}
+                        </button>
+                      ),
+                    )}
                   </div>
                 </div>
               )}
 
               {/* Age of Property */}
               <div>
-                <label className="text-sm text-slate-300 font-medium block mb-2">Age of Property</label>
+                <label className="text-sm text-slate-300 font-medium block mb-2">
+                  Age of Property
+                </label>
                 <div className="flex gap-2 flex-wrap">
-                  {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((a) => (
-                    <button
-                      key={a}
-                      type="button"
-                      onClick={() => setEditForm({ ...editForm, age: a })}
-                      className={`px-4 py-2 rounded-lg border text-sm ${
-                        editForm.age === a
-                          ? "bg-blue-600 text-white border-blue-600"
-                          : "bg-slate-800 border-slate-600 text-slate-300"
-                      }`}
-                    >
-                      {a}
-                    </button>
-                  ))}
+                  {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map(
+                    (a) => (
+                      <button
+                        key={a}
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, age: a })}
+                        className={`px-4 py-2 rounded-lg border text-sm ${
+                          editForm.age === a
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-slate-800 border-slate-600 text-slate-300"
+                        }`}
+                      >
+                        {a}
+                      </button>
+                    ),
+                  )}
                 </div>
               </div>
 
               {/* Available From - Rent Only */}
               {editForm.purpose === "rent" && (
                 <div>
-                  <label className="text-sm text-slate-300 font-medium block mb-2">Available From</label>
+                  <label className="text-sm text-slate-300 font-medium block mb-2">
+                    Available From
+                  </label>
                   <Input
                     type="date"
                     value={editForm.availableFrom}
-                    onChange={(e) => setEditForm({ ...editForm, availableFrom: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        availableFrom: e.target.value,
+                      })
+                    }
                     className="bg-slate-800 border-slate-600 text-white"
                   />
                 </div>
@@ -1054,10 +1197,12 @@ export default function SellerDashboard() {
               {/* Tenant Type - Rent/PG */}
               {(editForm.purpose === "rent" || editForm.purpose === "pg") && (
                 <div>
-                  <label className="text-sm text-slate-300 font-medium block mb-2">Willing to rent out to</label>
+                  <label className="text-sm text-slate-300 font-medium block mb-2">
+                    Willing to rent out to
+                  </label>
                   <div className="flex gap-2 flex-wrap">
-                    {(editForm.purpose === "pg" 
-                      ? ["Bachelors", "Boys", "Girls"] 
+                    {(editForm.purpose === "pg"
+                      ? ["Bachelors", "Boys", "Girls"]
                       : ["Family", "Bachelors", "Boys", "Girls"]
                     ).map((t) => (
                       <button
@@ -1080,11 +1225,17 @@ export default function SellerDashboard() {
               {/* Price */}
               <div>
                 <label className="text-sm text-slate-300 font-medium block mb-2">
-                  {editForm.purpose === "sell" ? "Sale Price (₹)" : editForm.purpose === "rent" ? "Expected Rent (₹)" : "PG Monthly Rent (₹)"}
+                  {editForm.purpose === "sell"
+                    ? "Sale Price (₹)"
+                    : editForm.purpose === "rent"
+                      ? "Expected Rent (₹)"
+                      : "PG Monthly Rent (₹)"}
                 </label>
                 <Input
                   value={editForm.price}
-                  onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, price: e.target.value })
+                  }
                   className="bg-slate-800 border-slate-600 text-white"
                   placeholder="Price"
                   type="number"
@@ -1093,7 +1244,9 @@ export default function SellerDashboard() {
 
               {/* Broker */}
               <div>
-                <label className="text-sm text-slate-300 font-medium block mb-2">Are you ok with brokers contacting you?</label>
+                <label className="text-sm text-slate-300 font-medium block mb-2">
+                  Are you ok with brokers contacting you?
+                </label>
                 <div className="flex gap-2">
                   {["Yes", "No"].map((b) => (
                     <button
@@ -1116,23 +1269,31 @@ export default function SellerDashboard() {
               {(editForm.purpose === "rent" || editForm.purpose === "pg") && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm text-slate-300 font-medium block mb-2">Security Deposit</label>
+                    <label className="text-sm text-slate-300 font-medium block mb-2">
+                      Security Deposit
+                    </label>
                     <Input
                       value={editForm.deposit}
-                      onChange={(e) => setEditForm({ ...editForm, deposit: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, deposit: e.target.value })
+                      }
                       className="bg-slate-800 border-slate-600 text-white"
                       placeholder="Deposit"
                       type="number"
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-slate-300 font-medium block mb-2">Maintenance</label>
+                    <label className="text-sm text-slate-300 font-medium block mb-2">
+                      Maintenance
+                    </label>
                     <div className="flex gap-2 mb-2">
                       {["Included", "Excluded"].map((m) => (
                         <button
                           key={m}
                           type="button"
-                          onClick={() => setEditForm({ ...editForm, maintenanceType: m })}
+                          onClick={() =>
+                            setEditForm({ ...editForm, maintenanceType: m })
+                          }
                           className={`px-3 py-1 rounded-lg border text-xs ${
                             editForm.maintenanceType === m
                               ? "bg-blue-600 text-white border-blue-600"
@@ -1145,7 +1306,12 @@ export default function SellerDashboard() {
                     </div>
                     <Input
                       value={editForm.maintenance}
-                      onChange={(e) => setEditForm({ ...editForm, maintenance: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          maintenance: e.target.value,
+                        })
+                      }
                       className="bg-slate-800 border-slate-600 text-white"
                       placeholder="Maintenance"
                       type="number"
@@ -1157,13 +1323,22 @@ export default function SellerDashboard() {
               {/* Sell Only - Ownership */}
               {editForm.purpose === "sell" && (
                 <div>
-                  <label className="text-sm text-slate-300 font-medium block mb-2">Ownership Type</label>
+                  <label className="text-sm text-slate-300 font-medium block mb-2">
+                    Ownership Type
+                  </label>
                   <div className="flex gap-2 flex-wrap">
-                    {["Freehold", "Leasehold", "Co-operative", "Power of Attorney"].map((o) => (
+                    {[
+                      "Freehold",
+                      "Leasehold",
+                      "Co-operative",
+                      "Power of Attorney",
+                    ].map((o) => (
                       <button
                         key={o}
                         type="button"
-                        onClick={() => setEditForm({ ...editForm, ownership: o })}
+                        onClick={() =>
+                          setEditForm({ ...editForm, ownership: o })
+                        }
                         className={`px-4 py-2 rounded-lg border text-sm ${
                           editForm.ownership === o
                             ? "bg-blue-600 text-white border-blue-600"
@@ -1179,13 +1354,17 @@ export default function SellerDashboard() {
 
               {/* Negotiable */}
               <div>
-                <label className="text-sm text-slate-300 font-medium block mb-2">Price Negotiable?</label>
+                <label className="text-sm text-slate-300 font-medium block mb-2">
+                  Price Negotiable?
+                </label>
                 <div className="flex gap-2">
                   {["Yes", "No"].map((n) => (
                     <button
                       key={n}
                       type="button"
-                      onClick={() => setEditForm({ ...editForm, negotiable: n })}
+                      onClick={() =>
+                        setEditForm({ ...editForm, negotiable: n })
+                      }
                       className={`px-4 py-2 rounded-lg border text-sm ${
                         editForm.negotiable === n
                           ? "bg-blue-600 text-white border-blue-600"
@@ -1200,16 +1379,24 @@ export default function SellerDashboard() {
 
               {/* Images Upload */}
               <div>
-                <label className="text-sm text-slate-300 font-medium block mb-2">Property Images</label>
-                
+                <label className="text-sm text-slate-300 font-medium block mb-2">
+                  Property Images
+                </label>
+
                 {/* Existing Images */}
                 {editForm.existingImages.length > 0 && (
                   <div className="mb-3">
-                    <p className="text-xs text-slate-400 mb-2">Current Images</p>
+                    <p className="text-xs text-slate-400 mb-2">
+                      Current Images
+                    </p>
                     <div className="flex gap-2 flex-wrap">
                       {editForm.existingImages.map((img, i) => (
                         <div key={`existing-${i}`} className="relative">
-                          <img src={img} alt="" className="w-20 h-20 object-cover rounded" />
+                          <img
+                            src={img}
+                            alt=""
+                            className="w-20 h-20 object-cover rounded"
+                          />
                           <button
                             type="button"
                             onClick={() => handleEditRemoveExistingImage(i)}
@@ -1238,7 +1425,9 @@ export default function SellerDashboard() {
 
                 {editForm.images.length > 0 && (
                   <div className="mt-3">
-                    <p className="text-xs text-slate-400 mb-2">New Images to Upload</p>
+                    <p className="text-xs text-slate-400 mb-2">
+                      New Images to Upload
+                    </p>
                     <div className="flex gap-2 flex-wrap">
                       {editForm.images.map((file, i) => (
                         <div key={`new-${i}`} className="relative">
@@ -1263,15 +1452,18 @@ export default function SellerDashboard() {
 
               {/* Description */}
               <div>
-                <label className="text-sm text-slate-300 font-medium block mb-2">Property Description</label>
+                <label className="text-sm text-slate-300 font-medium block mb-2">
+                  Property Description
+                </label>
                 <textarea
                   value={editForm.description}
-                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, description: e.target.value })
+                  }
                   className="w-full bg-slate-800 border-slate-600 text-white rounded-lg px-3 py-2 h-32 resize-none"
                   placeholder="Describe your property..."
                 />
               </div>
-
             </div>
             <DialogFooter>
               <Button
@@ -1360,7 +1552,10 @@ function SellerListings({
           My Listings ({properties.length})
         </CardTitle>
         <Link href="/dashboard/post-property">
-          <Button size="sm" className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
+          <Button
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+          >
             <PlusCircle size={16} className="mr-1" />
             Add New
           </Button>
@@ -1389,7 +1584,8 @@ function SellerListings({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <p className="font-bold text-white">
-                      {property.type || "Property"} {property.bhk ? `• ${property.bhk} BHK` : ""}
+                      {property.type || "Property"}{" "}
+                      {property.bhk ? `• ${property.bhk} BHK` : ""}
                     </p>
                     <p className="text-sm text-slate-400">
                       {property.locality}, {property.city}
@@ -1410,16 +1606,23 @@ function SellerListings({
                     >
                       {property.status === "pending" && "Pending Approval"}
                       {property.status === "rejected" && "Rejected"}
-                      {["new", "launched", "ready", "under-construction"].includes(
-                        property.status
-                      ) && "Active"}
+                      {[
+                        "new",
+                        "launched",
+                        "ready",
+                        "under-construction",
+                      ].includes(property.status) && "Active"}
                     </Badge>
                   </div>
                 </div>
 
                 <div className="flex gap-2 mt-3">
                   <Link href={`/dashboard/property_details/${property._id}`}>
-                    <Button variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer bg-slate-800/50"
+                    >
                       <Eye size={14} className="mr-1" />
                       View
                     </Button>
@@ -1427,7 +1630,7 @@ function SellerListings({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer"
+                    className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer  bg-slate-800/50"
                     onClick={() => onEdit(property)}
                   >
                     <Edit3 size={14} className="mr-1" />
@@ -1436,7 +1639,7 @@ function SellerListings({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-red-400 border-red-500/30 hover:bg-red-500/10 cursor-pointer"
+                    className="text-red-400 border-red-500/30 hover:bg-red-500/10 cursor-pointer hover:text-red-400  bg-red-800/50"
                     onClick={() => handleDelete(property._id)}
                     disabled={deleteLoading === property._id}
                   >
@@ -1444,7 +1647,7 @@ function SellerListings({
                       <Loader2 size={14} className="animate-spin" />
                     ) : (
                       <>
-                        <Trash2 size={14} className="mr-1" />
+                        <Trash2 size={14} className="mr-1 " />
                         Delete
                       </>
                     )}
@@ -1513,7 +1716,9 @@ function SellerProfile({ session }: { session: any }) {
             </label>
             <Input
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               className="bg-slate-800 border-slate-600 text-white"
             />
           </div>
@@ -1524,7 +1729,9 @@ function SellerProfile({ session }: { session: any }) {
             </label>
             <Input
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               className="bg-slate-800 border-slate-600 text-white"
               disabled
             />
@@ -1536,7 +1743,9 @@ function SellerProfile({ session }: { session: any }) {
             </label>
             <Input
               value={formData.mobile}
-              onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, mobile: e.target.value })
+              }
               placeholder="Enter mobile number"
               className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
             />

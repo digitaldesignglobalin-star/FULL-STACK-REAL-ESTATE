@@ -39,18 +39,26 @@ import { sendSMS } from "@/lib/sendSms";
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { name, email, mobile, password, role } = await req.json();
+    const { name, email, mobile, password, role, subRole } = await req.json();
 
-    const allowedRoles = ["user", "builder"];
-
+    const allowedRoles = ["user", "builder", "dealer"];
     const safeRole = allowedRoles.includes(role) ? role : "user";
+    const safeSubRole =
+      role === "builder" || role === "dealer" ? subRole : undefined;
 
     const existUser = await User.findOne({ email });
-    // const existUser = await User.findOne({ mobile });
+    const existUserByMobile = await User.findOne({ mobile });
 
     if (existUser) {
       return NextResponse.json(
-        { message: "Mobile already registered!" },
+        { message: "User already registered with this email!", type: "email" },
+        { status: 400 },
+      );
+    }
+
+    if (existUserByMobile) {
+      return NextResponse.json(
+        { message: "User already exists with this mobile number!", type: "mobile" },
         { status: 400 },
       );
     }
@@ -62,72 +70,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 🔥 Generate 6 digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // 🔥 Hash password before storing temporarily
     const hashedPassword = await bcrypt.hash(password, 10);
-    const hashedOtp = await bcrypt.hash(otp, 10);
 
-    // 🔥 Delete old OTP for same email
+    await Otp.deleteOne({ mobile });
 
-    // await Otp.deleteMany({ mobile });
-
-    const existingOtp = await Otp.findOne({ mobile });
-
-    if (existingOtp && existingOtp.expiresAt > new Date(Date.now() - 60000)) {
-      return NextResponse.json(
-        { message: "Please wait before requesting OTP again" },
-        { status: 400 },
-      );
-    }
-
-    // 🔥 Store OTP record
     await Otp.create({
       name,
       email,
       password: hashedPassword,
       mobile,
       role: safeRole,
-      otp: hashedOtp,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 min
+      subRole: safeSubRole,
+      otp: otp,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    // TEMP: Print OTP in terminal (for testing)
-    console.log("OTP:", otp);
-
-    //   await resend.emails.send({
-    //     from: "no-reply@yourrealestateapp.com", // dev-safe sender
-    //     to: email,
-    //     subject: "Your OTP Code",
-    //     html: `
-    //   <h2>Email Verification</h2>
-    //   <p>Your OTP is:</p>
-    //   <h1>${otp}</h1>
-    //   <p>This OTP expires in 5 minutes.</p>
-    // `,
-    //   });
-
     await sendSMS(mobile, otp);
-    // ==email otp==
-
-    //   await transporter.sendMail({
-    //     from: process.env.EMAIL_USER,
-    //     to: email,
-    //     subject: "Your OTP Code",
-    //     html: `
-    //   <h2>Email Verification</h2>
-    //   <p>Your OTP is:</p>
-    //   <h1>${otp}</h1>
-    //   <p>This OTP expires in 5 minutes.</p>
-    // `,
-    //   });
 
     return NextResponse.json(
       { message: "OTP sent successfully" },
       { status: 200 },
     );
-  } catch (error) {
-    return NextResponse.json({ message: "Register error" }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { message: error?.message || "Registration failed. Please try again." },
+      { status: 500 },
+    );
   }
 }

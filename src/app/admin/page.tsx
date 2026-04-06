@@ -85,11 +85,13 @@ interface User {
   email: string;
   mobile?: string;
   role: string;
+  subRole?: string;
   isApproved: boolean;
   isBlocked: boolean;
   image?: string;
   hasSubscription?: boolean;
   subscriptionExpiry?: string;
+  commissionPercent?: number;
   createdAt: string;
 }
 
@@ -433,6 +435,18 @@ export default function AdminDashboard() {
             label="Clients"
             active={activeTab === "users"}
             onClick={() => setActiveTab("users")}
+          />
+          <NavButton
+            icon={<Building2 size={18} />}
+            label="Builders"
+            active={activeTab === "builders"}
+            onClick={() => setActiveTab("builders")}
+          />
+          <NavButton
+            icon={<ShieldCheck size={18} />}
+            label="Dealers"
+            active={activeTab === "dealers"}
+            onClick={() => setActiveTab("dealers")}
           />
         </nav>
 
@@ -1441,6 +1455,109 @@ export default function AdminDashboard() {
                     </CardContent>
                   </Card>
                 ))
+              )}
+            </div>
+          )}
+
+          {/* BUILDERS VIEW */}
+          {activeTab === "builders" && (
+            <div className="space-y-6 animate-in fade-in duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {usersLoading ? (
+                  <div className="col-span-full flex items-center justify-center h-64">
+                    <Loader2 className="animate-spin text-blue-500" size={40} />
+                  </div>
+                ) : (
+                  filteredUsers
+                    .filter((u) => u.role === "builder" || u.subRole === "builder")
+                    .map((u) => (
+                      <Card key={u._id} className="bg-slate-900/30 border-slate-800/60 hover:border-purple-500/50 transition-colors group">
+                        <CardHeader className="flex flex-row items-center gap-4">
+                          <Avatar className="h-12 w-12 border-2 border-slate-800 group-hover:border-purple-500/50">
+                            <AvatarFallback className="bg-purple-500/20 text-purple-400 font-bold">
+                              {u.name[0]?.toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <CardTitle className="text-md font-bold text-white">{u.name}</CardTitle>
+                            <CardDescription className="text-[11px] text-slate-500">{u.email}</CardDescription>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/40">
+                              Builder
+                            </Badge>
+                            <span className={`text-xs ${u.isApproved ? "text-green-400" : "text-amber-400"}`}>
+                              {u.isApproved ? "Approved" : "Pending"}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                )}
+              </div>
+              {!usersLoading && filteredUsers.filter((u) => u.role === "builder" || u.subRole === "builder").length === 0 && (
+                <div className="text-center py-12 text-slate-500">No builders found</div>
+              )}
+            </div>
+          )}
+
+          {/* DEALERS VIEW */}
+          {activeTab === "dealers" && (
+            <div className="space-y-6 animate-in fade-in duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {usersLoading ? (
+                  <div className="col-span-full flex items-center justify-center h-64">
+                    <Loader2 className="animate-spin text-blue-500" size={40} />
+                  </div>
+                ) : (
+                  filteredUsers
+                    .filter((u) => u.role === "dealer" || u.subRole === "dealer")
+                    .map((u) => (
+                      <Card key={u._id} className="bg-slate-900/30 border-slate-800/60 hover:border-amber-500/50 transition-colors group">
+                        <CardHeader className="flex flex-row items-center gap-4">
+                          <Avatar className="h-12 w-12 border-2 border-slate-800 group-hover:border-amber-500/50">
+                            <AvatarFallback className="bg-amber-500/20 text-amber-400 font-bold">
+                              {u.name[0]?.toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <CardTitle className="text-md font-bold text-white">{u.name}</CardTitle>
+                            <CardDescription className="text-[11px] text-slate-500">{u.email}</CardDescription>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/40">
+                              Dealer
+                            </Badge>
+                            <span className={`text-xs ${u.isApproved ? "text-green-400" : "text-amber-400"}`}>
+                              {u.isApproved ? "Approved" : "Pending"}
+                            </span>
+                          </div>
+                          <div className="bg-slate-950/50 p-2 rounded-lg border border-slate-800/50">
+                            <p className="text-[9px] text-slate-500 uppercase font-black">Commission</p>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                min={0}
+                                max={100}
+                                value={u.commissionPercent || 0}
+                                onChange={(e) => updateUserMutation.mutate({ id: u._id, data: { commissionPercent: Number(e.target.value) } })}
+                                className="bg-slate-900 border-slate-700 text-white text-sm h-8"
+                                placeholder="0-100"
+                              />
+                              <span className="text-slate-400 text-sm">%</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                )}
+              </div>
+              {!usersLoading && filteredUsers.filter((u) => u.role === "dealer" || u.subRole === "dealer").length === 0 && (
+                <div className="text-center py-12 text-slate-500">No dealers found</div>
               )}
             </div>
           )}
