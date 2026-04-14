@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -83,6 +83,8 @@ export default function SellerDashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userApproved, setUserApproved] = useState<boolean | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
@@ -121,19 +123,24 @@ export default function SellerDashboard() {
   const [inquiries, setInquiries] = useState<any[]>([]);
   const [inquiriesLoading, setInquiriesLoading] = useState(false);
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/login");
+  const checkApproval = useCallback(async () => {
+    try {
+      const res = await axios.get("/api/seller/profile");
+      if (res.data.user) {
+        const role = res.data.user.role;
+        setUserRole(role);
+        if (role === "builder" || role === "dealer") {
+          setUserApproved(res.data.user.isApproved);
+        } else {
+          setUserApproved(true);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to check approval status", err);
     }
-  }, [status, router]);
+  }, []);
 
-  useEffect(() => {
-    if (session?.user) {
-      fetchSellerProperties();
-    }
-  }, [session]);
-
-  const fetchSellerProperties = async () => {
+  const fetchSellerProperties = useCallback(async () => {
     try {
       setLoading(true);
       const res = await axios.get("/api/seller/properties");
@@ -143,9 +150,9 @@ export default function SellerDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchInquiries = async () => {
+  const fetchInquiries = useCallback(async () => {
     setInquiriesLoading(true);
     try {
       const res = await axios.get("/api/seller/inquiries");
@@ -155,33 +162,38 @@ export default function SellerDashboard() {
     } finally {
       setInquiriesLoading(false);
     }
-  };
+  }, []);
+
+  const pendingProperties = useMemo(
+    () => properties.filter((p) => p.status === "pending"),
+    [properties]
+  );
+
+  const approvedProperties = useMemo(
+    () => properties.filter((p) =>
+      ["new", "launched", "ready", "under-construction"].includes(p.status)
+    ),
+    [properties]
+  );
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/login");
+    }
+  }, [status, router]);
+
+  useEffect(() => {
+    if (session?.user) {
+      fetchSellerProperties();
+      checkApproval();
+    }
+  }, [session, fetchSellerProperties, checkApproval]);
 
   useEffect(() => {
     if (activeTab === "inquiries") {
       fetchInquiries();
     }
-  }, [activeTab]);
-
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="animate-spin text-blue-500" size={40} />
-          <p className="text-slate-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!session?.user) {
-    return null;
-  }
-
-  const pendingProperties = properties.filter((p) => p.status === "pending");
-  const approvedProperties = properties.filter((p) =>
-    ["new", "launched", "ready", "under-construction"].includes(p.status),
-  );
+  }, [activeTab, fetchInquiries]);
 
   const formatPrice = (price?: number) => {
     if (!price && price !== 0) return "N/A";
@@ -197,6 +209,123 @@ export default function SellerDashboard() {
       year: "numeric",
     });
   };
+
+  // Early returns after all hooks
+  if (status === "loading" || userApproved === null) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="animate-spin text-blue-500" size={40} />
+          <p className="text-slate-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session?.user) {
+    return null;
+  }
+
+  if (userRole === "builder") {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Building2 className="text-blue-400" size={40} />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">Seller Panel</h2>
+          <p className="text-slate-400 mb-6">
+            This is the Seller Panel. As a registered Builder, please use the
+            Builder Panel instead.
+          </p>
+          <Link href="/dashboard/builder">
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              Go to Builder Panel
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (userRole === "dealer") {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Building2 className="text-blue-400" size={40} />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">Seller Panel</h2>
+          <p className="text-slate-400 mb-6">
+            This is the Seller Panel. As a registered Dealer, please use the
+            Dealer Panel instead.
+          </p>
+          <Link href="/dashboard/dealer">
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              Go to Dealer Panel
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (userRole === "user" && userApproved === false) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-20 h-20 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Clock className="text-yellow-400" size={40} />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">
+            Pending Approval
+          </h2>
+          <p className="text-slate-400 mb-6">
+            Your account is currently under review. Our team will verify your
+            details and activate your seller panel within 24-48 hours.
+          </p>
+          <p className="text-slate-500 text-sm mb-6">
+            You will be notified once your account is approved.
+          </p>
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition cursor-pointer"
+          >
+            Go to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userApproved) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-20 h-20 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Clock className="text-yellow-400" size={40} />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">
+            Pending Approval
+          </h2>
+          <p className="text-slate-400 mb-6">
+            Your account is currently under review. Our team will verify your
+            details and activate your seller panel within 24-48 hours.
+          </p>
+          <p className="text-slate-500 text-sm mb-6">
+            You will be notified once your account is approved.
+          </p>
+          <Link href="/dashboard">
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition cursor-pointer"
+            >
+              Go to Home
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const handleEditClick = (property: Property) => {
     setEditingProperty(property);
@@ -831,6 +960,7 @@ export default function SellerDashboard() {
 
           {/* PROFILE VIEW */}
           {activeTab === "profile" && <SellerProfile session={session} />}
+
         </div>
 
         {/* EDIT PROPERTY DIALOG */}

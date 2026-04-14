@@ -62,19 +62,16 @@ export default function LoginPage() {
 
       if (res?.error) {
         toast.error("Invalid email or password", { id: toastId });
+        setLoading(false);
         return;
       }
 
       toast.success("Welcome back!", { id: toastId });
 
-      /* ⭐ VERY IMPORTANT PART */
-      const sessionRes = await fetch("/api/auth/session");
-      const session = await sessionRes.json();
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const role = session?.user?.role;
-
-      if (role === "admin") router.push("/admin");
-      else if (role === "employee") router.push("/employee");
+      if (session?.data?.user?.role === "admin") router.push("/admin");
+      else if (session?.data?.user?.role === "employee") router.push("/employee");
       else router.push("/dashboard");
 
 
@@ -89,7 +86,7 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       setGoogleLoading(true);
-      await signIn("google",{callbackUrl:"/after-login"})
+      await signIn("google",{callbackUrl:"/auth/after-login"})
     } catch {
       toast.error("Google login failed");
     } finally {

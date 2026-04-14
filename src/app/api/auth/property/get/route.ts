@@ -28,14 +28,20 @@ export async function GET(req: Request) {
 
   // If status=for-rent is passed, filter for rent/PG properties
   if (status === "for-rent") {
-    query = { 
-      $or: [
-        { purpose: "rent" },
-        { purpose: "pg" },
-        { category: "pg" }
-      ],
-      status: { $ne: "pending" }
-    };
+    if (purpose === "pg") {
+      query = { 
+        $or: [
+          { purpose: "pg" },
+          { category: "pg" }
+        ],
+        status: { $ne: "pending" }
+      };
+    } else {
+      query = { 
+        purpose: "rent",
+        status: { $ne: "pending" }
+      };
+    }
   } else if (status) {
     query.status = status;
   }
@@ -96,13 +102,20 @@ export async function GET(req: Request) {
 
   const total = await Property.countDocuments(query);
 
-  return NextResponse.json({
-    properties,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
+  return NextResponse.json(
+    {
+      properties,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     },
-  });
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    }
+  );
 }

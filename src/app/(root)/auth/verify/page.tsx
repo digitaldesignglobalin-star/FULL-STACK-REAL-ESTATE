@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default function VerifyOtpPage() {
+function VerifyOtpForm() {
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(30);
@@ -26,7 +26,6 @@ export default function VerifyOtpPage() {
 
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
-  // Countdown timer
   useEffect(() => {
     if (timer === 0) return;
     const interval = setInterval(() => {
@@ -71,7 +70,6 @@ export default function VerifyOtpPage() {
 
       toast.success("Account verified successfully!");
       router.push("/auth/login");
-      // router.push(`/auth/verify-phone?email=${email}`);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Verification failed");
     } finally {
@@ -80,22 +78,21 @@ export default function VerifyOtpPage() {
   };
 
   const handleResend = async () => {
-   try {
-    await axios.post("/api/auth/resend-otp", { email });
+    try {
+      await axios.post("/api/auth/resend-otp", { email });
 
-    toast.success("OTP resent successfully!");
-    setTimer(30);
-  } catch (error: any) {
-    toast.error(
-      error.response?.data?.message || "Failed to resend OTP"
-    );
-  }
+      toast.success("OTP resent successfully!");
+      setTimer(30);
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Failed to resend OTP"
+      );
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40 px-4">
 
-{/* Back Button - Extreme Top Left */}
       <div className="absolute top-3 left-3">
         <Link
           href="/auth/register"
@@ -125,7 +122,6 @@ export default function VerifyOtpPage() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* OTP Inputs */}
           <div className="flex justify-between gap-2 ">
             {otp.map((digit, index) => (
               <input
@@ -150,7 +146,6 @@ export default function VerifyOtpPage() {
             {loading ? "Verifying..." : "Verify Account"}
           </Button>
 
-          {/* Resend Section */}
           <div className="text-center text-sm text-muted-foreground">
             {timer > 0 ? (
               <p>Resend OTP in {timer}s</p>
@@ -166,5 +161,20 @@ export default function VerifyOtpPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function VerifyOtpPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <VerifyOtpForm />
+    </Suspense>
   );
 }

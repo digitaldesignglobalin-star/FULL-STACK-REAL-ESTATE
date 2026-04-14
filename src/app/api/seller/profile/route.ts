@@ -29,14 +29,16 @@ export async function PATCH(req: Request) {
 
     const data = await req.json();
 
+    const updateFields: any = {};
+
+    if (data.name) updateFields.name = data.name;
+    if (data.mobile) updateFields.mobile = data.mobile;
+    if (data.builderInfo) updateFields.builderInfo = data.builderInfo;
+    if (data.dealerInfo) updateFields.dealerInfo = data.dealerInfo;
+
     const user = await User.findByIdAndUpdate(
       session.user.id,
-      {
-        $set: {
-          name: data.name,
-          mobile: data.mobile,
-        },
-      },
+      { $set: updateFields },
       { new: true }
     ).select("-password");
 

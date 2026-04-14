@@ -54,7 +54,10 @@ export async function POST(req: NextRequest) {
       name: otpRecord.name,
       email: otpRecord.email,
       password: otpRecord.password,
-        mobile: otpRecord.mobile,
+      mobile: otpRecord.mobile,
+      role: otpRecord.role || "user",
+      subRole: otpRecord.subRole,
+      isApproved: true,
     });
 
     // Delete OTP record

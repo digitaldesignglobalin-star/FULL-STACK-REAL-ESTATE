@@ -31,6 +31,7 @@ export interface IProperty extends mongoose.Document {
   featured?: boolean;
   status: "new" | "launched" | "ready" | "under-construction" | "pending" | "rejected";
   postedBy?: mongoose.Types.ObjectId;
+  postedByRole?: string;
   inquiries?: {
     name: string;
     email: string;
@@ -95,6 +96,10 @@ const PropertySchema = new mongoose.Schema<IProperty>(
     postedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+    },
+    postedByRole: {
+      type: String,
+      enum: ["user", "builder", "dealer", "employee", "admin"],
     },
 
     inquiries: [{

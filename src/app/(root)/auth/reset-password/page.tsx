@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -48,11 +48,6 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    // if (!token || !email) {
-    //   toast.error("Invalid reset link");
-    //   return;
-    // }
-
     try {
       setLoading(true);
 
@@ -80,7 +75,6 @@ export default function ResetPasswordPage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* New Password */}
           <div className="relative">
             <Input
               type={showPassword ? "text" : "password"}
@@ -92,7 +86,6 @@ export default function ResetPasswordPage() {
             />
           </div>
 
-          {/* Confirm Password */}
           <div className="relative">
             <Input
               type={showPassword ? "text" : "password"}
@@ -132,5 +125,20 @@ export default function ResetPasswordPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

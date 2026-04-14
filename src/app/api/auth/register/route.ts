@@ -4,47 +4,44 @@ import Otp from "@/models/otp.model";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 import { sendSMS } from "@/lib/sendSms";
-/**
- * @swagger
- * /api/auth/register:
- *   post:
- *     summary: Register a new user
- *     description: Register a new user with mobile number, email and password. Sends an OTP to verify the mobile number.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               email:
- *                 type: string
- *               mobile:
- *                 type: string
- *               password:
- *                 type: string
- *               role:
- *                 type: string
- *                 enum: [user, builder]
- *     responses:
- *       200:
- *         description: OTP sent successfully
- *       400:
- *         description: Mobile already registered or missing requirements
- *       500:
- *         description: Register error
- */
+import { authRateLimit, getClientIp, createRateLimitResponse } from "@/lib/rateLimit";
+import { z } from "zod";
+
+const registerSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters").max(100, "Name too long"),
+  email: z.string().email("Invalid email address"),
+  mobile: z.string().regex(/^\d{10}$/, "Mobile must be 10 digits"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  role: z.enum(["user", "builder", "dealer"]).optional().default("user"),
+  subRole: z.string().optional(),
+});
+
 export async function POST(req: NextRequest) {
   try {
-    await connectDB();
-    const { name, email, mobile, password, role, subRole } = await req.json();
+    const ip = getClientIp(req);
+    const rateLimitResult = authRateLimit(ip);
 
-    const allowedRoles = ["user", "builder", "dealer"];
-    const safeRole = allowedRoles.includes(role) ? role : "user";
-    const safeSubRole =
-      role === "builder" || role === "dealer" ? subRole : undefined;
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(
+        rateLimitResult.limit,
+        rateLimitResult.remaining,
+        rateLimitResult.reset
+      );
+    }
+
+    await connectDB();
+    
+    const body = await req.json();
+    const validation = registerSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { message: validation.error.issues[0].message },
+        { status: 400 }
+      );
+    }
+
+    const { name, email, mobile, password, role, subRole } = validation.data;
 
     const existUser = await User.findOne({ email });
     const existUserByMobile = await User.findOne({ mobile });
@@ -63,12 +60,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (password.length < 6) {
-      return NextResponse.json(
-        { message: "Password must be at least 6 characters" },
-        { status: 400 },
-      );
-    }
+    const safeSubRole = role === "builder" || role === "dealer" ? subRole : undefined;
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -80,7 +72,7 @@ export async function POST(req: NextRequest) {
       email,
       password: hashedPassword,
       mobile,
-      role: safeRole,
+      role,
       subRole: safeSubRole,
       otp: otp,
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
@@ -90,7 +82,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { message: "OTP sent successfully" },
-      { status: 200 },
+      {
+        status: 200,
+        headers: {
+          "X-RateLimit-Limit": rateLimitResult.limit.toString(),
+          "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
+        },
+      }
     );
   } catch (error: any) {
     return NextResponse.json(

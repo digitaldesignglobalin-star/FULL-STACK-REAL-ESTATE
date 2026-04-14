@@ -9,6 +9,7 @@ import { Heart, Phone, Search, ChevronLeft, ChevronRight, Loader2, MapPin } from
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useWishlist } from "@/hooks/useWishlist";
+import LocationSearch from "@/components/common/LocationSearch";
 
 interface Property {
   _id: string;
@@ -58,6 +59,7 @@ export default function PropertiesByStatusPage() {
   const [page, setPage] = useState(1);
   const [propertiesData, setPropertiesData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [purposeFilter, setPurposeFilter] = useState<string>("rent");
 
   useEffect(() => {
     async function fetchProperties() {
@@ -65,9 +67,13 @@ export default function PropertiesByStatusPage() {
       
       let url = "/api/auth/property/get?";
       
-      // For Tenants page - filter by purpose (rent or pg)
       if (statusParam === "for-rent") {
         url += "status=for-rent";
+        if (purposeFilter === "rent") {
+          url += "&purpose=rent";
+        } else if (purposeFilter === "pg") {
+          url += "&purpose=pg";
+        }
       } else if (statusParam === "featured") {
         url += "featured=true";
       } else if (statusParam) {
@@ -96,7 +102,7 @@ export default function PropertiesByStatusPage() {
     }
     
     fetchProperties();
-  }, [statusParam, search, locality, minPrice, maxPrice, bhk, minArea, type, page]);
+  }, [statusParam, search, locality, minPrice, maxPrice, bhk, minArea, type, page, purposeFilter]);
 
   const properties = propertiesData?.properties || [];
   const pagination = propertiesData?.pagination;
@@ -153,7 +159,32 @@ export default function PropertiesByStatusPage() {
             <span className="text-gray-800">Properties</span>
           </div>
           <h1 className="text-3xl font-bold text-slate-800 mb-2">{getStatusTitle(statusParam)}</h1>
-          <p className="text-slate-500">Browse through {pagination?.total || 0} properties</p>
+          <p className="text-slate-500 mb-4">Browse through {pagination?.total || 0} properties</p>
+          
+          {statusParam === "for-rent" && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPurposeFilter("rent")}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition cursor-pointer ${
+                  purposeFilter === "rent" 
+                    ? "bg-blue-600 text-white" 
+                    : "bg-white border border-slate-300 text-slate-700 hover:border-blue-500"
+                }`}
+              >
+                For Rent
+              </button>
+              <button
+                onClick={() => setPurposeFilter("pg")}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition cursor-pointer ${
+                  purposeFilter === "pg" 
+                    ? "bg-blue-600 text-white" 
+                    : "bg-white border border-slate-300 text-slate-700 hover:border-blue-500"
+                }`}
+              >
+                PG / Co-living
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
@@ -164,16 +195,12 @@ export default function PropertiesByStatusPage() {
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Search</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                    placeholder="City, locality..."
-                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+                <LocationSearch
+                  value={search}
+                  onChange={setSearch}
+                  onSelect={() => setPage(1)}
+                  placeholder="Search city, locality..."
+                />
               </div>
 
               <div>

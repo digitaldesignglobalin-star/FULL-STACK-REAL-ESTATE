@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "create-admin": "tsx src/scripts/create-admin.ts"
+    "create-admin": "tsx src/scripts/create-admin.ts",
+    "create-employee": "tsx src/scripts/create-employee.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.95.2",

@@ -9,6 +9,7 @@ import PhotosUpload from "@/components/postProperty/PhotosUpload";
 import PricingDetails from "@/components/postProperty/PricingDetails";
 import axios from "axios";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 const steps = [
   "Basic Details",
@@ -52,7 +53,39 @@ export type FormType = {
   maintenanceType: string;
 };
 
+const getDefaultForm = (role?: string): FormType => ({
+  purpose: "rent",
+  category: "",
+  type: "",
+  status: role === "builder" || role === "dealer" ? "new" : "new",
+  city: "",
+  locality: "",
+  bhk: "",
+  bed: "",
+  bath: "",
+  bal: "",
+  furnish: "",
+  age: "",
+  tenant: "",
+  broker: "",
+  area: "",
+  areaUnit: "sq.ft.",
+  availableFrom: "",
+  price: "",
+  pricePerSqft: "",
+  deposit: "",
+  maintenance: "",
+  description: "",
+  ownership: "Freehold",
+  negotiable: "Yes",
+  maintenanceType: "Included",
+  images: [],
+  video: null,
+  youtube: "",
+});
+
 export default function PostPropertyPage() {
+  const { data: session } = useSession();
   const [step, setStep] = useState(() => {
     if (typeof window !== "undefined") {
       const savedStep = localStorage.getItem("propertyStep");
@@ -61,12 +94,18 @@ export default function PostPropertyPage() {
     return 0;
   });
   const [loading, setLoading] = useState(false);
-
   const [mounted, setMounted] = useState(false);
+  const [userRole, setUserRole] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (session?.user?.role) {
+      setUserRole(session.user.role);
+    }
+  }, [session]);
 
   const [form, setForm] = useState<FormType>(() => {
     if (typeof window !== "undefined") {
@@ -74,7 +113,6 @@ export default function PostPropertyPage() {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-
           return {
             ...parsed,
             images: [],
@@ -85,38 +123,17 @@ export default function PostPropertyPage() {
         }
       }
     }
-
-    return {
-      purpose: "rent",
-      category: "",
-      type: "",
-      status: "new",
-      city: "",
-      locality: "",
-      bhk: "",
-      bed: "",
-      bath: "",
-      bal: "",
-      furnish: "",
-      age: "",
-      tenant: "",
-      broker: "",
-      area: "",
-      areaUnit: "sq.ft.",
-      availableFrom: "",
-      price: "",
-      pricePerSqft: "",
-      deposit: "",
-      maintenance: "",
-      description: "",
-      ownership: "Freehold",
-      negotiable: "Yes",
-      maintenanceType: "Included",
-      images: [],
-      video: null,
-      youtube: "",
-    };
+    return getDefaultForm(session?.user?.role);
   });
+
+  useEffect(() => {
+    if (mounted && userRole !== undefined) {
+      const saved = localStorage.getItem("propertyForm");
+      if (!saved) {
+        setForm(getDefaultForm(userRole));
+      }
+    }
+  }, [userRole, mounted]);
 
   useEffect(() => {
     localStorage.setItem("propertyForm", JSON.stringify(form));

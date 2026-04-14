@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
+import { signIn } from "next-auth/react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ function VerifyPhoneContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const mobile = searchParams.get("mobile") || "";
+  const role = searchParams.get("role") || "";
 
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
 
@@ -69,7 +71,8 @@ function VerifyPhoneContent() {
       });
 
       if (res.data.success) {
-        toast.success(res.data.message || "Account created successfully!");
+        toast.success("Phone verified successfully! Please login to continue.");
+
         setTimeout(() => {
           router.push("/auth/login");
         }, 1500);
@@ -97,7 +100,7 @@ function VerifyPhoneContent() {
             Enter the 6-digit code sent to
           </p>
 
-          <p className="text-center font-semibold mt-1">{mobile}</p>
+          <p className="text-center font-semibold mt-1">+91 {mobile}</p>
 
           <div className="flex justify-center gap-3 mt-6">
             {otp.map((digit, i) => (

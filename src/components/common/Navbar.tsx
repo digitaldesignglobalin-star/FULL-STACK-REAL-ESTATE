@@ -27,9 +27,12 @@ export default function Navbar() {
             <Link href="/dashboard/seller" className="hover:text-white cursor-pointer transition">
               For Sellers
             </Link>
-            <span className="hover:text-white cursor-pointer transition">
-              For Dealers / Builders
-            </span>
+            <Link href="/dashboard/builder" className="hover:text-white cursor-pointer transition">
+              For Builders
+            </Link>
+            <Link href="/dashboard/dealer" className="hover:text-white cursor-pointer transition">
+              For Dealers
+            </Link>
           </div>
         </div>
 
@@ -112,9 +115,20 @@ export default function Navbar() {
               >
                 For Sellers
               </Link>
-              <span className="text-slate-800 font-semibold hover:text-blue-600 cursor-pointer">
-                For Dealers / Builders
-              </span>
+              <Link 
+                href="/dashboard/builder"
+                className="text-slate-800 font-semibold hover:text-blue-600 cursor-pointer"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                For Builders
+              </Link>
+              <Link 
+                href="/dashboard/dealer"
+                className="text-slate-800 font-semibold hover:text-blue-600 cursor-pointer"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                For Dealers
+              </Link>
             </div>
 
             <div className="flex flex-col gap-6">

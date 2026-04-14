@@ -120,6 +120,7 @@ export async function POST(req: Request) {
 
     if (session?.user?.id) {
       propertyData.postedBy = session.user.id;
+      propertyData.postedByRole = session.user.role;
     }
 
     const allowedStatus = ["new", "launched", "ready", "under-construction", "pending"];

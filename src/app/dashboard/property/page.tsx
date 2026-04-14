@@ -5,9 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
-import { Heart, Phone, Search, ChevronLeft, ChevronRight, Loader2, MapPin } from "lucide-react";
+import { Heart, Phone, ChevronLeft, ChevronRight, Loader2, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useWishlist } from "@/hooks/useWishlist";
+import LocationSearch from "@/components/common/LocationSearch";
 
 interface Property {
   _id: string;
@@ -105,16 +106,12 @@ export default function PropertiesPage() {
               <div className="space-y-4">
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Search</label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                    <input
-                      type="text"
-                      value={search}
-                      onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                      placeholder="Search by city, locality"
-                      className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm"
-                    />
-                  </div>
+                  <LocationSearch
+                    value={search}
+                    onChange={setSearch}
+                    onSelect={() => setPage(1)}
+                    placeholder="Search city, locality..."
+                  />
                 </div>
 
                 <div>

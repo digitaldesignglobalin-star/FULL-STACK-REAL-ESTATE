@@ -1,5 +1,23 @@
 import mongoose from "mongoose";
 
+export interface IBuilderInfo {
+  companyName?: string;
+  registrationNumber?: string;
+  experience?: string;
+  projectsCompleted?: string;
+  aboutCompany?: string;
+  officeAddress?: string;
+}
+
+export interface IDealerInfo {
+  agencyName?: string;
+  licenseNumber?: string;
+  yearsInBusiness?: string;
+  specialization?: string;
+  aboutBusiness?: string;
+  officeAddress?: string;
+}
+
 export interface IUser extends mongoose.Document {
   name: string;
   email: string;
@@ -13,6 +31,8 @@ export interface IUser extends mongoose.Document {
   hasSubscription: boolean;
   subscriptionExpiry?: Date;
   commissionPercent?: number;
+  builderInfo?: IBuilderInfo;
+  dealerInfo?: IDealerInfo;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,6 +51,22 @@ const userSchema = new mongoose.Schema<IUser>(
     hasSubscription: { type: Boolean, default: false },
     subscriptionExpiry: { type: Date },
     commissionPercent: { type: Number, default: 0, min: 0, max: 100 },
+    builderInfo: {
+      companyName: { type: String },
+      registrationNumber: { type: String },
+      experience: { type: String },
+      projectsCompleted: { type: String },
+      aboutCompany: { type: String },
+      officeAddress: { type: String },
+    },
+    dealerInfo: {
+      agencyName: { type: String },
+      licenseNumber: { type: String },
+      yearsInBusiness: { type: String },
+      specialization: { type: String },
+      aboutBusiness: { type: String },
+      officeAddress: { type: String },
+    },
   },
   { timestamps: true }
 );

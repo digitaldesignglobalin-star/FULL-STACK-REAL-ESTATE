@@ -13,6 +13,8 @@ export default async function AfterLogin() {
 
   if (role === "admin") redirect("/admin");
   else if (role === "employee") redirect("/employee");
-  else redirect("/dashboard");
+  else if (role === "builder") redirect("/dashboard/builder");
+  else if (role === "dealer") redirect("/dashboard/dealer");
+  else redirect("/auth/role-phone");
 
 }

@@ -2,19 +2,40 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Otp from "@/models/otp.model";
 import User from "@/models/user.model";
+import { authRateLimit, getClientIp, createRateLimitResponse } from "@/lib/rateLimit";
+import { z } from "zod";
+
+const verifyPhoneSchema = z.object({
+  mobile: z.string().regex(/^\d{10}$/, "Mobile must be 10 digits"),
+  otp: z.string().length(6, "OTP must be 6 digits"),
+});
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const rateLimitResult = authRateLimit(ip);
+
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(
+        rateLimitResult.limit,
+        rateLimitResult.remaining,
+        rateLimitResult.reset
+      );
+    }
+
     await connectDB();
 
-    const { mobile, otp } = await req.json();
+    const body = await req.json();
+    const validation = verifyPhoneSchema.safeParse(body);
 
-    if (!mobile || !otp) {
+    if (!validation.success) {
       return NextResponse.json(
-        { message: "Mobile and OTP are required" },
+        { message: validation.error.issues[0].message },
         { status: 400 }
       );
     }
+
+    const { mobile, otp } = validation.data;
 
     const tempUser = await Otp.findOne({ mobile });
 
@@ -54,12 +75,21 @@ export async function POST(req: NextRequest) {
     const exists = await User.findOne({ email: tempUser.email });
 
     if (exists) {
+      await User.findByIdAndUpdate(exists._id, {
+        mobile: tempUser.mobile,
+        role: tempUser.role || "user",
+        isApproved: tempUser.role === "user" ? true : false,
+      });
       await Otp.deleteOne({ mobile });
-      return NextResponse.json(
-        { message: "User already exists. Please login." },
-        { status: 400 }
-      );
+
+      return NextResponse.json({
+        success: true,
+        message: "Phone verified successfully!",
+        role: tempUser.role,
+      });
     }
+
+    const isBuilderOrDealer = tempUser.role === "builder" || tempUser.role === "dealer";
 
     await User.create({
       name: tempUser.name,
@@ -68,6 +98,7 @@ export async function POST(req: NextRequest) {
       mobile: tempUser.mobile,
       role: tempUser.role || "user",
       subRole: tempUser.subRole,
+      isApproved: !isBuilderOrDealer,
     });
 
     await Otp.deleteOne({ mobile });
@@ -75,6 +106,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: "Account created successfully!",
+      role: tempUser.role,
     });
 
   } catch (err) {

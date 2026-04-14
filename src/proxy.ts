@@ -12,7 +12,8 @@ export async function proxy(req: NextRequest) {
     "/api/auth",
     "/favicon.ico",
     "/_next",
-    "/admin/login", // Admin login page - accessible without authentication
+    "/admin/login",
+    "/employee/login",
     "/welcome",
   ];
   if (publicRoutes.some((path) => pathname.startsWith(path))) {
